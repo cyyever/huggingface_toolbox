@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cyy_huggingface_toolbox"
+version = "0.1"
+requires-python = ">=3.12"
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [
+  {name = "cyy", email = "cyyever@outloo.com"},
+]
+license = {text = "BSD License"}
+classifiers = [
+  "Programming Language :: Python"
+]
+
+
+[project.urls]
+Repository = "https://github.com/cyyever/huggingface_toolbox"
+
+[tool.pyright]
+include = ["cyy_huggingface_toolbox"]
+defineConstant = { DEBUG = true }
+
+reportMissingImports = true
+reportMissingTypeStubs = false

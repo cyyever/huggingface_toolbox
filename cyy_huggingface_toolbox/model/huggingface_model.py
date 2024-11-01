@@ -155,7 +155,7 @@ def __create_huggingface_model(model_name: str, pretrained: bool, **model_kwargs
 def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
     prefix = "hugging_face_sequence_classification_"
     if model_name.startswith(prefix):
-        real_name = model_name[len(prefix):]
+        real_name = model_name[len(prefix) :]
         return (
             functools.partial(
                 __create_huggingface_sequence_classification_model, real_name
@@ -164,13 +164,13 @@ def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
         )
     prefix = "hugging_face_seq2seq_lm_"
     if model_name.startswith(prefix):
-        real_name = model_name[len(prefix):]
+        real_name = model_name[len(prefix) :]
         return (
             functools.partial(__create_huggingface_seq2seq_lm_model, real_name),
             real_name,
         )
     prefix = "hugging_face_"
     if model_name.startswith(prefix):
-        real_name = model_name[len(prefix):]
+        real_name = model_name[len(prefix) :]
         return functools.partial(__create_huggingface_model, real_name), real_name
     return None
