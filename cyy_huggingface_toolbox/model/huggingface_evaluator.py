@@ -10,14 +10,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model, **kwargs: Any) -> None:
         model_type = kwargs.get("model_type", None)
         if model_type is None:
-            kwargs["model_type"] = self._get_underlying_model_type(model)
+            kwargs["model_type"] = self.__determin_model_type(model)
         super().__init__(model=model, **kwargs)
-
-    @classmethod
-    def _get_underlying_model_type(cls, model) -> ModelType | None:
-        if "ConditionalGeneration" in model.__class__.__name__:
-            return ModelType.TextGeneration
-        return None
 
     def split_batch_input(self, inputs: Any, *args: Any, **kwargs: Any) -> dict:
         batch_dim = 0
@@ -48,7 +42,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         inputs.pop("input_ids", None)
         return inputs
 
-    def get_input_embedding(self, inputs) -> torch.Tensor:
+    def get_input_embedding(self, inputs: transformers.BatchEncoding) -> torch.Tensor:
         return self.get_input_feature(inputs)["inputs_embeds"]
 
     def _create_input(
@@ -90,3 +84,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             case "multi_label_classification":
                 return BCEWithLogitsLoss()
         raise NotImplementedError(self.model.config.problem_type)
+
+    @classmethod
+    def __determin_model_type(cls, model) -> ModelType | None:
+        if "ConditionalGeneration" in model.__class__.__name__:
+            return ModelType.TextGeneration
+        return None
