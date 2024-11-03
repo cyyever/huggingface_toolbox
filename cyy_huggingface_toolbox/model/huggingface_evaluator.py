@@ -2,16 +2,16 @@ from typing import Any, Callable
 
 import torch
 import transformers
-from cyy_torch_toolbox import ModelEvaluator, ModelType
+from cyy_torch_toolbox import ModelEvaluator, ModelType, Tokenizer
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model, **kwargs: Any) -> None:
-        model_type = kwargs.get("model_type", None)
-        if model_type is None:
-            kwargs["model_type"] = self.__determin_model_type(model)
+        model_type = kwargs.get("model_type", self.__determin_model_type(model))
+        kwargs["model_type"] = model_type
         super().__init__(model=model, **kwargs)
+        self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
 
     def split_batch_input(self, inputs: Any, *args: Any, **kwargs: Any) -> dict:
         batch_dim = 0
@@ -31,6 +31,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         if "inputs_embeds" not in inputs:
             input_ids = inputs["input_ids"]
             if hasattr(self.model, "distilbert"):
+                assert isinstance(input_ids, torch.Tensor)
                 if len(list(input_ids.shape)) == 1:
                     input_ids = input_ids.unsqueeze(dim=0)
                 embeddings = self.model.distilbert.embeddings(input_ids).detach()
@@ -49,12 +50,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         self,
         inputs: dict,
         targets: Any,
-        device: torch.device,
+        *args: Any,
         **kwargs: Any,
     ) -> dict:
-        if hasattr(targets, "input_ids"):
-            targets = targets.input_ids
         inputs["labels"] = targets
+        if hasattr(targets, "input_ids"):
+            inputs["labels"] = targets.input_ids
         return inputs
 
     def get_feature_forward_fun(self) -> str:
