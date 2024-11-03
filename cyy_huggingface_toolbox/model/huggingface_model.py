@@ -13,10 +13,7 @@ def __create_huggingface_model(
     **model_kwargs,
 ):
     if pretrained:
-        pretrained_model = transformers_module.from_pretrained(
-            model_name, **model_kwargs
-        )
-        return pretrained_model
+        return transformers_module.from_pretrained(model_name, **model_kwargs)
     get_logger().warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
     model = transformers_module.from_config(config)
