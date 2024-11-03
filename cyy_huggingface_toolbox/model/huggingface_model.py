@@ -11,7 +11,7 @@ def __create_huggingface_model(
     model_name: str,
     pretrained: bool,
     **model_kwargs,
-):
+) -> Callable:
     if pretrained:
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     get_logger().warning("use huggingface without pretrained parameters")
@@ -21,32 +21,24 @@ def __create_huggingface_model(
 
 
 def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
-    prefix = "hugging_face_sequence_classification_"
-    if model_name.startswith(prefix):
-        real_name = model_name[len(prefix) :]
-        return (
-            functools.partial(
-                __create_huggingface_model,
-                transformers.AutoModelForSequenceClassification,
+    prefix_to_module = [
+        (
+            "hugging_face_sequence_classification_",
+            transformers.AutoModelForSequenceClassification,
+        ),
+        ("hugging_face_seq2seq_lm_", transformers.AutoModelForSeq2SeqLM),
+        ("hugging_face_token_classification_", transformers.AutoModelForTokenClassification),
+        ("hugging_face_", transformers.AutoModel),
+    ]
+    for prefix, transformers_module in prefix_to_module:
+        if model_name.startswith(prefix):
+            real_name = model_name[len(prefix) :]
+            return (
+                functools.partial(
+                    __create_huggingface_model,
+                    transformers_module,
+                    real_name,
+                ),
                 real_name,
-            ),
-            real_name,
-        )
-    prefix = "hugging_face_seq2seq_lm_"
-    if model_name.startswith(prefix):
-        real_name = model_name[len(prefix) :]
-        return (
-            functools.partial(
-                __create_huggingface_model,
-                transformers.AutoModelForSeq2SeqLM,
-                real_name,
-            ),
-            real_name,
-        )
-    prefix = "hugging_face_"
-    if model_name.startswith(prefix):
-        real_name = model_name[len(prefix) :]
-        return functools.partial(
-            __create_huggingface_model, transformers.AutoModel, real_name
-        ), real_name
+            )
     return None
