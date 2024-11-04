@@ -1,10 +1,7 @@
 from typing import Any
-
-import transformers
-
-
 import functools
 from collections.abc import Callable
+import transformers
 
 from cyy_naive_lib.log import log_debug
 from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory
@@ -14,32 +11,24 @@ from cyy_torch_toolbox.model import (
     global_model_factory,
     ModelEvaluator,
 )
-from cyy_torch_toolbox.model.repositary import get_model_info
 from .huggingface_evaluator import HuggingFaceModelEvaluator
 from .huggingface_model import get_huggingface_constructor
-
 from ..tokenizer import HuggingFaceTokenizer
 
 
 def __get_model_evaluator(
-    parent_factory: Callable | None, model, **kwargs: Any
+    model, **kwargs: Any
 ) -> HuggingFaceModelEvaluator | ModelEvaluator | None:
     if isinstance(model, transformers.PreTrainedModel):
         return HuggingFaceModelEvaluator(model=model, **kwargs)
-    if parent_factory is not None:
-        return parent_factory(model=model, **kwargs)
     return None
 
 
-global_model_evaluator_factory.register(
-    DatasetType.Text,
-    functools.partial(
-        __get_model_evaluator, global_model_evaluator_factory.get(DatasetType.Text)
-    ),
-)
-
-
-model_constructors = get_model_info().get(DatasetType.Text, {})
+for dataset_type in (DatasetType.Text, DatasetType.CodeText):
+    global_model_evaluator_factory.register(
+        dataset_type,
+        [__get_model_evaluator],
+    )
 
 
 class HuggingFaceModelFactory(Factory):
