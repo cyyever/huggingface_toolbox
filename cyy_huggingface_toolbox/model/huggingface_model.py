@@ -12,6 +12,7 @@ def __create_huggingface_model(
     pretrained: bool,
     **model_kwargs,
 ) -> Callable:
+    model_kwargs["attn_implementation"] = "eager"
     if pretrained:
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     get_logger().warning("use huggingface without pretrained parameters")
@@ -27,7 +28,10 @@ def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
             transformers.AutoModelForSequenceClassification,
         ),
         ("hugging_face_seq2seq_lm_", transformers.AutoModelForSeq2SeqLM),
-        ("hugging_face_token_classification_", transformers.AutoModelForTokenClassification),
+        (
+            "hugging_face_token_classification_",
+            transformers.AutoModelForTokenClassification,
+        ),
         ("hugging_face_", transformers.AutoModel),
     ]
     for prefix, transformers_module in prefix_to_module:
