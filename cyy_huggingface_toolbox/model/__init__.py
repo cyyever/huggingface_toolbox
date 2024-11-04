@@ -36,21 +36,21 @@ class HuggingFaceModelFactory(Factory):
         super().__init__()
         self.__parent_factory = parent_factory
 
-    def get(self, key: str, case_sensitive: bool = False) -> Callable | None:
+    def get(self, key: str, case_sensitive: bool = True) -> Callable | None:
         if self.__parent_factory is not None:
             res = self.__parent_factory.get(key=key, case_sensitive=case_sensitive)
             if res is not None:
                 return res
-        assert not case_sensitive
+        assert case_sensitive
         model_name = key
         res = get_huggingface_constructor(model_name)
-        if res is not None:
-            constructor, name = res
-            print("name is", name)
-            return functools.partial(
-                self.__create_model, name=name, constructor=constructor
-            )
-        return None
+        if res is None:
+            return None
+        constructor, name = res
+        print("name is", name)
+        return functools.partial(
+            self.__create_model, name=name, constructor=constructor
+        )
 
     def __create_model(
         self,
