@@ -47,21 +47,20 @@ class HuggingFaceModelFactory(Factory):
         if res is None:
             return None
         constructor, name = res
-        print("name is", name)
         return functools.partial(
-            self.__create_model, name=name, constructor=constructor
+            self.__create_model, real_name=name, constructor=constructor
         )
 
     def __create_model(
         self,
-        name: str,
+        real_name: str,
         constructor: Callable,
         dataset_collection: DatasetCollection,
         **kwargs: Any,
     ) -> dict:
         final_model_kwargs: dict = kwargs
         tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
-        tokenizer_kwargs["name"] = name
+        tokenizer_kwargs["name"] = real_name
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
         log_debug("tokenizer is %s", tokenizer)
 
