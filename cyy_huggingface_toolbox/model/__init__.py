@@ -48,14 +48,14 @@ class HuggingFaceModelFactory(Factory):
             constructor, name = res
             print("name is", name)
             return functools.partial(
-                self.__create_text_model, name=name, constructor=constructor
+                self.__create_model, name=name, constructor=constructor
             )
         return None
 
-    def __create_text_model(
+    def __create_model(
         self,
-        name,
-        constructor,
+        name: str,
+        constructor: Callable,
         dataset_collection: DatasetCollection,
         **kwargs: Any,
     ) -> dict:
