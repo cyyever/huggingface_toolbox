@@ -63,20 +63,10 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
-        assert kwargs.pop("reduce_loss", True)
-        # targets = kwargs["targets"]
-        # if kwargs.get("reduce_loss", True):
-        #     return {
-        #         "model_input": model_input,
-        #         "model_output": output,
-        #         "logits": output.logits,
-        #         "loss": output.loss,
-        #         "is_averaged_loss": True,
-        #         "loss_batch_size": targets.shape[0],
-        #     }
         return self._compute_loss(*args, **output, **kwargs)
 
     def _compute_loss(self, **kwargs: Any) -> dict:
+        assert kwargs.pop("reduce_loss", True)
         targets = kwargs["targets"]
         if "labels" not in kwargs:
             kwargs["labels"] = kwargs["targets"]
@@ -88,6 +78,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "is_averaged_loss": True,
             "loss_batch_size": targets.shape[0],
         }
+        if "logits" in kwargs:
+            res["logits"] = kwargs["logits"]
         return res
 
     def _choose_loss_function(self) -> Callable:
