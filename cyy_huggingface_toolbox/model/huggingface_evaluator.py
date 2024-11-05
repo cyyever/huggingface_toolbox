@@ -1,7 +1,10 @@
 from typing import Any, Callable
+import re
 
+import functools
 import torch
 import transformers
+from transformers.loss.loss_utils import LOSS_MAPPING
 from cyy_torch_toolbox import ModelEvaluator, ModelType, Tokenizer
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
@@ -62,6 +65,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
+        assert kwargs.get("reduce_loss", True)
         # targets = kwargs["targets"]
         # if kwargs.get("reduce_loss", True):
         #     return {
@@ -72,14 +76,17 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         #         "is_averaged_loss": True,
         #         "loss_batch_size": targets.shape[0],
         #     }
-        return self._compute_loss(*args, output=output.logits, **kwargs)
+        return self._compute_loss(*args, **output, **kwargs)
 
     def _choose_loss_function(self) -> Callable:
-        match self.model.config.problem_type:
-            case "regression":
-                return MSELoss()
-            case "single_label_classification":
-                return CrossEntropyLoss()
-            case "multi_label_classification":
-                return BCEWithLogitsLoss()
-        raise NotImplementedError(self.model.config.problem_type)
+        if getattr(self.model.config, "loss_type", None) is not None:
+            loss_type = self.model.config.loss_type
+        else:
+            loss_type = self.model.__class__.__name__
+            if loss_type not in LOSS_MAPPING:
+                for predefined_loss_type in LOSS_MAPPING:
+                    if predefined_loss_type in loss_type:
+                        loss_type = predefined_loss_type
+                        break
+        assert loss_type is not None
+        return functools.partial(LOSS_MAPPING[loss_type], config=self.model.config)
