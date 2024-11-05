@@ -71,9 +71,6 @@ class HuggingFaceModelFactory(Factory):
 
 
 for dataset_type in (DatasetType.Text, DatasetType.CodeText):
-    global_model_factory[dataset_type] = [HuggingFaceModelFactory()]
-
-
-__all__ = [
-    "HuggingFaceModelEvaluator",
-]
+    if dataset_type not in global_model_factory:
+        global_model_factory[dataset_type] = []
+    global_model_factory[dataset_type].append(HuggingFaceModelFactory())
