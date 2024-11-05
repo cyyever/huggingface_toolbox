@@ -1,12 +1,10 @@
 from typing import Any, Callable
-import re
 
 import functools
 import torch
 import transformers
 from transformers.loss.loss_utils import LOSS_MAPPING
-from cyy_torch_toolbox import ModelEvaluator, ModelType, Tokenizer
-from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+from cyy_torch_toolbox import ModelEvaluator, Tokenizer
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
@@ -65,7 +63,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
-        assert kwargs.get("reduce_loss", True)
+        assert kwargs.pop("reduce_loss", True)
         # targets = kwargs["targets"]
         # if kwargs.get("reduce_loss", True):
         #     return {
@@ -77,6 +75,20 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         #         "loss_batch_size": targets.shape[0],
         #     }
         return self._compute_loss(*args, **output, **kwargs)
+
+    def _compute_loss(self, **kwargs: Any) -> dict:
+        targets = kwargs["targets"]
+        if "labels" not in kwargs:
+            kwargs["labels"] = kwargs["targets"]
+        if "pooled_logits" not in kwargs:
+            kwargs["pooled_logits"] = kwargs["logits"]
+        loss = self.loss_fun(**kwargs)
+        res = {
+            "loss": loss,
+            "is_averaged_loss": True,
+            "loss_batch_size": targets.shape[0],
+        }
+        return res
 
     def _choose_loss_function(self) -> Callable:
         if getattr(self.model.config, "loss_type", None) is not None:
