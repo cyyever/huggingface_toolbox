@@ -83,6 +83,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         return res
 
     def _choose_loss_function(self) -> Callable:
+        # Copied from hugging face
         if getattr(self.model.config, "loss_type", None) is not None:
             loss_type = self.model.config.loss_type
         else:
