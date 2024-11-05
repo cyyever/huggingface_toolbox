@@ -4,6 +4,7 @@ from typing import Callable, Any
 import transformers
 import transformers.models
 from cyy_naive_lib.log import get_logger
+from cyy_torch_toolbox import ModelType
 
 
 def __create_huggingface_model(
@@ -21,20 +22,23 @@ def __create_huggingface_model(
     return model
 
 
-def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
+def get_huggingface_constructor(
+    model_name: str,
+) -> tuple[Callable, str, ModelType] | None:
     prefix_to_module = [
         (
             "hugging_face_sequence_classification_",
             transformers.AutoModelForSequenceClassification,
+            ModelType.SequenceClassification,
         ),
         ("hugging_face_seq2seq_lm_", transformers.AutoModelForSeq2SeqLM),
         (
             "hugging_face_token_classification_",
             transformers.AutoModelForTokenClassification,
+            ModelType.TokenClassification,
         ),
-        ("hugging_face_", transformers.AutoModel),
     ]
-    for prefix, transformers_module in prefix_to_module:
+    for prefix, transformers_module, model_type in prefix_to_module:
         if model_name.startswith(prefix):
             real_name = model_name[len(prefix) :]
             return (
@@ -44,5 +48,6 @@ def get_huggingface_constructor(model_name: str) -> tuple[Callable, str] | None:
                     real_name,
                 ),
                 real_name,
+                model_type,
             )
     return None

@@ -4,7 +4,7 @@ from collections.abc import Callable
 import transformers
 
 from cyy_naive_lib.log import log_debug
-from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory
+from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory, ModelType
 from cyy_torch_toolbox.model import (
     create_model,
     global_model_evaluator_factory,
@@ -46,14 +46,18 @@ class HuggingFaceModelFactory(Factory):
         res = get_huggingface_constructor(model_name)
         if res is None:
             return None
-        constructor, name = res
+        constructor, name, model_type = res
         return functools.partial(
-            self.__create_model, real_name=name, constructor=constructor
+            self.__create_model,
+            real_name=name,
+            model_type=model_type,
+            constructor=constructor,
         )
 
     def __create_model(
         self,
         real_name: str,
+        model_type: ModelType,
         constructor: Callable,
         dataset_collection: DatasetCollection,
         **kwargs: Any,
@@ -71,7 +75,7 @@ class HuggingFaceModelFactory(Factory):
                     final_model_kwargs[k] = token_num
         model = create_model(constructor, **final_model_kwargs)
 
-        return {"model": model, "tokenizer": tokenizer}
+        return {"model": model, "tokenizer": tokenizer, "model_type": model_type}
 
 
 for dataset_type in (DatasetType.Text, DatasetType.CodeText):

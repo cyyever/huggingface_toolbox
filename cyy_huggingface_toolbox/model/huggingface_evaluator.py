@@ -8,8 +8,6 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model, **kwargs: Any) -> None:
-        model_type = kwargs.get("model_type", self.__determin_model_type(model))
-        kwargs["model_type"] = model_type
         super().__init__(model=model, **kwargs)
         self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
 
@@ -85,9 +83,3 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             case "multi_label_classification":
                 return BCEWithLogitsLoss()
         raise NotImplementedError(self.model.config.problem_type)
-
-    @classmethod
-    def __determin_model_type(cls, model) -> ModelType | None:
-        if "ConditionalGeneration" in model.__class__.__name__:
-            return ModelType.TextGeneration
-        return None
