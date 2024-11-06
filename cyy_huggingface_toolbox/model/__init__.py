@@ -32,19 +32,22 @@ for dataset_type in (DatasetType.Text, DatasetType.CodeText):
 
 
 class HuggingFaceModelFactory(Factory):
-    def get(self, key: str, case_sensitive: bool = True) -> Callable | None:
+    def get(self, key: str, case_sensitive: bool = True) -> dict | None:
         assert case_sensitive
         model_name = key
         res = get_huggingface_constructor(model_name)
         if res is None:
             return None
         constructor, name, model_type = res
-        return functools.partial(
-            self.__create_model,
-            real_name=name,
-            model_type=model_type,
-            constructor=constructor,
-        )
+        return {
+            "constructor": functools.partial(
+                self.__create_model,
+                real_name=name,
+                model_type=model_type,
+                constructor=constructor,
+            ),
+            "model_type": model_type,
+        }
 
     def __create_model(
         self,
