@@ -25,6 +25,8 @@ class HunggingFaceFactory(DatasetFactory):
             with open(cls.__dataset_cache_file(cache_dir, split), "rb") as f:
                 return dill.load(f)
 
+        if "val" in split:
+            split = "validation"
         dataset = load_hugging_face_dataset(
             path=path, split=split, cache_dir=cache_dir, **kwargs
         )
