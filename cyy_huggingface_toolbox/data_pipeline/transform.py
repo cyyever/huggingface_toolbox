@@ -1,15 +1,27 @@
 import functools
 import torch
-from typing import Callable
+from typing import Callable, Any
 
 import transformers
-from ..model import HuggingFaceModelEvaluator
-from ..tokenizer import HuggingFaceTokenizer
 from cyy_torch_toolbox import (
     DatasetCollection,
     ModelType,
+    ModelEvaluator,
     TransformType,
+    default_data_extraction,
+    DatasetType,
+    MachineLearningPhase,
 )
+from cyy_torch_toolbox.data_pipeline.common import (
+    int_target_to_text,
+    replace_str,
+)
+
+
+from cyy_naive_lib.log import get_logger
+
+from ..model import HuggingFaceModelEvaluator
+from ..tokenizer import HuggingFaceTokenizer
 
 
 def squeeze_huggingface_input(huggingface_input: dict) -> dict:
@@ -58,3 +70,74 @@ def apply_tokenizer_transforms(
         ),
         key=batch_key,
     )
+
+
+def huggingface_data_extraction(data: Any) -> dict:
+    return default_data_extraction(data)
+
+
+def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
+    if model_evaluator is not None:
+        assert isinstance(model_evaluator, ModelEvaluator)
+        if model_evaluator.model_type in (ModelType.TokenClassification):
+            for _, transform in dc.foreach_transform():
+                transform.clear(TransformType.ExtractData)
+                transform.append(
+                    key=TransformType.ExtractData, transform=huggingface_data_extraction
+                )
+
+    assert dc.dataset_type == DatasetType.Text
+    dataset_name: str = dc.name.lower()
+    # InputText
+    if dataset_name == "imdb":
+        dc.append_transform(
+            functools.partial(replace_str, old="<br />", new=""),
+            key=TransformType.InputText,
+        )
+
+
+def get_label_to_text_mapping(dataset_name: str) -> dict | None:
+    match dataset_name.lower():
+        case "multi_nli":
+            return {0: "entailment", 1: "neutral", 2: "contradiction"}
+        case "imdb":
+            return {0: "negative", 1: "positive"}
+    return None
+
+
+def add_text_transforms(
+    dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator
+) -> None:
+    assert dc.dataset_type in (DatasetType.Text, DatasetType.CodeText)
+    dataset_name: str = dc.name.lower()
+    # InputText
+    assert model_evaluator.model_type is not None
+
+    # Input && InputBatch
+    input_max_len = dc.dataset_kwargs.get("input_max_len", None)
+    if input_max_len is not None:
+        get_logger().info("use input text max_len %s", input_max_len)
+    apply_tokenizer_transforms(
+        dc=dc, model_evaluator=model_evaluator, max_len=input_max_len, for_input=True
+    )
+
+    # Target
+    if model_evaluator.model_type == ModelType.TextGeneration:
+        mapping = get_label_to_text_mapping(dataset_name)
+        if mapping is not None:
+            dc.append_transform(
+                functools.partial(int_target_to_text, mapping=mapping),
+                key=TransformType.Target,
+            )
+        elif isinstance(
+            dc.get_dataset_util(phase=MachineLearningPhase.Training).get_sample_label(
+                0
+            ),
+            int,
+        ):
+            dc.append_transform(int_target_to_text, key=TransformType.Target)
+        max_len = dc.dataset_kwargs.get("output_max_len", None)
+        get_logger().info("use output text max len %s", max_len)
+        apply_tokenizer_transforms(
+            dc=dc, model_evaluator=model_evaluator, max_len=max_len, for_input=False
+        )
