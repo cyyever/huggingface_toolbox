@@ -84,7 +84,10 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
         for _, transform in dc.foreach_transform():
             transform.clear(TransformType.ExtractData)
             transform.append(
-                key=TransformType.ExtractData, transform=huggingface_data_extraction
+                key=TransformType.ExtractData,
+                transform=functools.partial(
+                    huggingface_data_extraction, model_evaluator.model_type
+                ),
             )
 
     assert dc.dataset_type == DatasetType.Text

@@ -29,7 +29,7 @@ def get_huggingface_constructor(
         (
             "hugging_face_sequence_classification_",
             transformers.AutoModelForSequenceClassification,
-            ModelType.SequenceClassification,
+            ModelType.Classification,
         ),
         (
             "hugging_face_seq2seq_lm_",

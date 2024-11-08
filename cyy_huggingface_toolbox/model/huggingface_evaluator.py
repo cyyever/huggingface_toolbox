@@ -4,7 +4,7 @@ import functools
 import torch
 import transformers
 from transformers.loss.loss_utils import LOSS_MAPPING
-from cyy_torch_toolbox import ModelEvaluator, Tokenizer
+from cyy_torch_toolbox import ModelEvaluator, Tokenizer, ModelType
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
@@ -52,9 +52,10 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         *args: Any,
         **kwargs: Any,
     ) -> dict:
-        inputs["labels"] = targets
-        if hasattr(targets, "input_ids"):
-            inputs["labels"] = targets.input_ids
+        if self.model_type in (ModelType.Classification,):
+            inputs["labels"] = targets
+            if hasattr(targets, "input_ids"):
+                inputs["labels"] = targets.input_ids
         return inputs
 
     def get_feature_forward_fun(self) -> str:
