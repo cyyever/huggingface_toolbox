@@ -72,19 +72,20 @@ def apply_tokenizer_transforms(
     )
 
 
-def huggingface_data_extraction(data: Any) -> dict:
+def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
+    if model_type in (ModelType.TokenClassification,):
+        return data
     return default_data_extraction(data)
 
 
 def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
     if model_evaluator is not None:
         assert isinstance(model_evaluator, ModelEvaluator)
-        if model_evaluator.model_type in (ModelType.TokenClassification):
-            for _, transform in dc.foreach_transform():
-                transform.clear(TransformType.ExtractData)
-                transform.append(
-                    key=TransformType.ExtractData, transform=huggingface_data_extraction
-                )
+        for _, transform in dc.foreach_transform():
+            transform.clear(TransformType.ExtractData)
+            transform.append(
+                key=TransformType.ExtractData, transform=huggingface_data_extraction
+            )
 
     assert dc.dataset_type == DatasetType.Text
     dataset_name: str = dc.name.lower()
