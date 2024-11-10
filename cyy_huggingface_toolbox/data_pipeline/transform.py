@@ -43,7 +43,8 @@ def apply_tokenizer_transforms(
     else:
         batch_key = TransformType.TargetBatch
         key = TransformType.Target
-    assert isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer)
+    if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
+        return
     assert max_len is not None
     dc.append_transform(
         functools.partial(

@@ -14,6 +14,6 @@ def append_transforms_to_dc(dc, model_evaluator: Any = None) -> None:
         add_text_transforms(dc=dc, model_evaluator=model_evaluator)
 
 
-global_data_transform_factory.register(DatasetType.Text, append_transforms_to_dc)
+global_data_transform_factory.register(DatasetType.Text, [append_transforms_to_dc])
 
 __all__ = ["apply_tokenizer_transforms"]
