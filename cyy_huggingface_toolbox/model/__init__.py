@@ -11,13 +11,13 @@ from cyy_torch_toolbox.model import (
     global_model_factory,
     ModelEvaluator,
 )
-from .huggingface_evaluator import HuggingFaceModelEvaluator
-from .huggingface_model import get_huggingface_constructor
+from .evaluator import HuggingFaceModelEvaluator
+from .model import get_huggingface_constructor
 from ..tokenizer import HuggingFaceTokenizer
 
 
 def __get_model_evaluator(
-    model, **kwargs: Any
+    model: Any, **kwargs: Any
 ) -> HuggingFaceModelEvaluator | ModelEvaluator | None:
     if isinstance(model, transformers.PreTrainedModel):
         return HuggingFaceModelEvaluator(model=model, **kwargs)
