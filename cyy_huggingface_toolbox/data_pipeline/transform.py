@@ -31,6 +31,13 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
     return huggingface_input
 
 
+def tokenize_input(tokenizer_call: Callable, data: Any) -> Any:
+    if "tokens" in data:
+        res = tokenizer_call(data.pop("tokens"))
+        return data | res
+    return tokenizer_call(data)
+
+
 def apply_tokenizer_transforms(
     dc: DatasetCollection,
     model_evaluator: HuggingFaceModelEvaluator,
@@ -48,11 +55,14 @@ def apply_tokenizer_transforms(
     assert max_len is not None
     dc.append_transform(
         functools.partial(
-            model_evaluator.tokenizer.tokenizer,
-            max_length=max_len,
-            padding="max_length",
-            return_tensors="pt",
-            truncation=True,
+            tokenize_input,
+            functools.partial(
+                model_evaluator.tokenizer.tokenizer,
+                max_length=max_len,
+                padding="max_length",
+                return_tensors="pt",
+                truncation=True,
+            ),
         ),
         key=key,
     )
@@ -75,7 +85,11 @@ def apply_tokenizer_transforms(
 
 def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
     if model_type in (ModelType.TokenClassification,):
-        return data
+        match data:
+            case {"data": data, "index": index}:
+                data.pop("id", None)
+                return {"index": index, "input": data}
+        raise RuntimeError(data)
     return default_data_extraction(data)
 
 
