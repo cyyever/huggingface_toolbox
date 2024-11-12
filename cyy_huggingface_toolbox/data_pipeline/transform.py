@@ -31,11 +31,23 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
     return huggingface_input
 
 
-def tokenize_input(tokenizer_call: Callable, data: Any) -> Any:
+def tokenize_input(
+    tokenizer: HuggingFaceTokenizer, tokenizer_call: Callable, data: Any
+) -> Any:
     if "tokens" in data:
-        res = tokenizer_call(data.pop("tokens"))
+        res = {}
+        res["input_ids"] = tokenizer.tokenizer.convert_tokens_to_ids(data.pop("tokens"))
         return data | res
     return tokenizer_call(data)
+
+
+def collect_label(data: Any) -> Any:
+    # print(data["input_ids"].shape)
+    # print(data["input_ids"])
+    # fdsfds
+    assert len(data["ner_tags"]) == len(data["input_ids"])
+    data["labels"] = data.pop("ner_tags")
+    return data
 
 
 def apply_tokenizer_transforms(
@@ -52,35 +64,51 @@ def apply_tokenizer_transforms(
         key = TransformType.Target
     if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
         return
-    assert max_len is not None
-    dc.append_transform(
-        functools.partial(
-            tokenize_input,
+    if model_evaluator.model_type != ModelType.TokenClassification:
+        assert max_len is not None
+        dc.append_transform(
             functools.partial(
-                model_evaluator.tokenizer.tokenizer,
-                max_length=max_len,
-                padding="max_length",
-                return_tensors="pt",
-                truncation=True,
+                tokenize_input,
+                model_evaluator.tokenizer,
+                functools.partial(
+                    model_evaluator.tokenizer.tokenizer,
+                    max_length=max_len,
+                    padding="max_length",
+                    return_tensors="pt",
+                    truncation=True,
+                ),
             ),
-        ),
-        key=key,
-    )
-    dc.append_transform(squeeze_huggingface_input, key=key)
-    collator: Callable = transformers.DataCollatorWithPadding
-    match model_evaluator.model_type:
-        case ModelType.TokenClassification:
-            collator = transformers.DataCollatorForTokenClassification
-    dc.append_transform(
-        functools.partial(
-            collator(
-                tokenizer=model_evaluator.tokenizer.tokenizer,
-                padding="max_length",
-                max_length=max_len,
-            )
-        ),
-        key=batch_key,
-    )
+            key=key,
+        )
+        dc.append_transform(squeeze_huggingface_input, key=key)
+        dc.append_transform(
+            functools.partial(
+                transformers.DataCollatorWithPadding(
+                    tokenizer=model_evaluator.tokenizer.tokenizer,
+                    padding="max_length",
+                    max_length=max_len,
+                )
+            ),
+            key=batch_key,
+        )
+    if model_evaluator.model_type == ModelType.TokenClassification:
+        dc.append_transform(
+            functools.partial(
+                tokenize_input,
+                model_evaluator.tokenizer,
+                model_evaluator.tokenizer.tokenizer,
+            ),
+            key=key,
+        )
+        dc.append_transform(collect_label, key=key)
+        dc.append_transform(
+            functools.partial(
+                transformers.DataCollatorForTokenClassification(
+                    tokenizer=model_evaluator.tokenizer.tokenizer,
+                )
+            ),
+            key=batch_key,
+        )
 
 
 def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
