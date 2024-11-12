@@ -79,7 +79,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         res = {
             "loss": loss,
             "is_averaged_loss": True,
-            "loss_batch_size": targets.shape[0],
+            "loss_batch_size": targets.view(-1).shape[0],
         }
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
