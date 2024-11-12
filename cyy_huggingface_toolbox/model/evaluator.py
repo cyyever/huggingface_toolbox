@@ -52,10 +52,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         *args: Any,
         **kwargs: Any,
     ) -> dict:
-        if self.model_type in (ModelType.Classification,):
+        if self.model_type in (ModelType.Classification, ModelType.TokenClassification):
             inputs["labels"] = targets
             if hasattr(targets, "input_ids"):
                 inputs["labels"] = targets.input_ids
+        else:
+            assert targets is None
         return inputs
 
     def get_feature_forward_fun(self) -> str:
