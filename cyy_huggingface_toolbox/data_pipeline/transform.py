@@ -34,7 +34,7 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
 def tokenize_input(
     tokenizer: HuggingFaceTokenizer, tokenizer_call: Callable, data: Any
 ) -> Any:
-    if "tokens" in data:
+    if isinstance(data, dict) and "tokens" in data:
         res = {}
         res["input_ids"] = tokenizer.tokenizer.convert_tokens_to_ids(data.pop("tokens"))
         return data | res
@@ -42,9 +42,6 @@ def tokenize_input(
 
 
 def collect_label(data: Any) -> Any:
-    # print(data["input_ids"].shape)
-    # print(data["input_ids"])
-    # fdsfds
     assert len(data["ner_tags"]) == len(data["input_ids"])
     data["labels"] = data.pop("ner_tags")
     return data
