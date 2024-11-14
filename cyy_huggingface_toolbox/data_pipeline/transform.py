@@ -34,17 +34,44 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
 def tokenize_input(
     tokenizer: HuggingFaceTokenizer, tokenizer_call: Callable, data: Any
 ) -> Any:
-    if isinstance(data, dict) and "tokens" in data:
-        res = {}
-        res["input_ids"] = tokenizer.tokenizer.convert_tokens_to_ids(data.pop("tokens"))
-        return data | res
+    # if isinstance(data, dict) and "tokens" in data:
+    #     res = {}
+    #     res["input_ids"] = tokenizer.tokenizer.convert_tokens_to_ids(data.pop("tokens"))
+    #     return data | res
     return tokenizer_call(data)
 
 
-def collect_label(data: Any) -> Any:
-    assert len(data["ner_tags"]) == len(data["input_ids"])
-    data["labels"] = data.pop("ner_tags")
-    return data
+def tokenize_and_align_labels(tokenizer: transformers.PreTrainedTokenizer, examples):
+    tokenized_inputs = tokenizer(
+        examples["tokens"], truncation=True, is_split_into_words=True
+    )
+
+    # for i, label in enumerate(examples["ner_tags"]):
+    word_ids = tokenized_inputs.word_ids(
+        batch_index=0
+    )  # Map tokens to their respective word.
+    previous_word_idx: None | int = None
+    label = examples["ner_tags"]
+    label_ids: list[int] = []
+    for word_idx in word_ids:  # Set the special tokens to -100.
+        if word_idx is None:
+            label_ids.append(-100)
+        elif (
+            word_idx != previous_word_idx
+        ):  # Only label the first token of a given word.
+            label_ids.append(label[word_idx])
+        else:
+            label_ids.append(-100)
+        previous_word_idx = word_idx
+
+    tokenized_inputs["labels"] = label_ids
+    return tokenized_inputs
+
+
+# def collect_label(data: Any) -> Any:
+#     assert len(data["ner_tags"]) == len(data["input_ids"])
+#     data["labels"] = data.pop("ner_tags")
+#     return data
 
 
 def apply_tokenizer_transforms(
@@ -91,13 +118,11 @@ def apply_tokenizer_transforms(
     if model_evaluator.model_type == ModelType.TokenClassification:
         dc.append_transform(
             functools.partial(
-                tokenize_input,
-                model_evaluator.tokenizer,
-                model_evaluator.tokenizer.tokenizer,
+                tokenize_and_align_labels, model_evaluator.tokenizer.tokenizer
             ),
             key=key,
         )
-        dc.append_transform(collect_label, key=key)
+        # dc.append_transform(collect_label, key=key)
         dc.append_transform(
             functools.partial(
                 transformers.DataCollatorForTokenClassification(
