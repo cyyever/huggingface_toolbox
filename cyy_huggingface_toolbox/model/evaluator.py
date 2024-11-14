@@ -76,10 +76,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         if "pooled_logits" not in kwargs:
             kwargs["pooled_logits"] = kwargs["logits"]
         loss = self.loss_fun(**kwargs)
+
         res = {
             "loss": loss,
             "is_averaged_loss": True,
-            "loss_batch_size": targets.view(-1).shape[0],
+            "loss_batch_size": (targets.view(-1)!=-100).count_nonzero(),
         }
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
