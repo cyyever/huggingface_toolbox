@@ -13,7 +13,6 @@ def __create_huggingface_model(
     pretrained: bool,
     **model_kwargs,
 ) -> Callable:
-    model_kwargs["attn_implementation"] = "eager"
     if pretrained:
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     get_logger().warning("use huggingface without pretrained parameters")
