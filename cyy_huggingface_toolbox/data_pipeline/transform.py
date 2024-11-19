@@ -1,6 +1,6 @@
 import functools
 import torch
-from typing import Callable, Any
+from typing import Any
 
 import transformers
 from cyy_torch_toolbox import (
@@ -18,7 +18,7 @@ from cyy_torch_toolbox.data_pipeline.common import (
 )
 
 
-from cyy_naive_lib.log import get_logger
+from cyy_naive_lib.log import log_info
 
 from ..model import HuggingFaceModelEvaluator
 from ..tokenizer import HuggingFaceTokenizer
@@ -29,16 +29,6 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
         if isinstance(v, torch.Tensor):
             huggingface_input[k] = huggingface_input[k].squeeze(dim=0)
     return huggingface_input
-
-
-def tokenize_input(
-    tokenizer: HuggingFaceTokenizer, tokenizer_call: Callable, data: Any
-) -> Any:
-    # if isinstance(data, dict) and "tokens" in data:
-    #     res = {}
-    #     res["input_ids"] = tokenizer.tokenizer.convert_tokens_to_ids(data.pop("tokens"))
-    #     return data | res
-    return tokenizer_call(data)
 
 
 def tokenize_and_align_labels(tokenizer: transformers.PreTrainedTokenizer, examples):
@@ -80,27 +70,23 @@ def apply_tokenizer_transforms(
     max_len: int | None,
     for_input: bool,
 ) -> None:
+    if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
+        return
     if for_input:
         batch_key = TransformType.InputBatch
         key = TransformType.Input
     else:
         batch_key = TransformType.TargetBatch
         key = TransformType.Target
-    if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
-        return
     if model_evaluator.model_type != ModelType.TokenClassification:
         assert max_len is not None
         dc.append_transform(
             functools.partial(
-                tokenize_input,
-                model_evaluator.tokenizer,
-                functools.partial(
-                    model_evaluator.tokenizer.tokenizer,
-                    max_length=max_len,
-                    padding="max_length",
-                    return_tensors="pt",
-                    truncation=True,
-                ),
+                model_evaluator.tokenizer.tokenizer,
+                max_length=max_len,
+                padding="max_length",
+                return_tensors="pt",
+                truncation=True,
             ),
             key=key,
         )
@@ -185,7 +171,7 @@ def add_text_transforms(
     # Input && InputBatch
     input_max_len = dc.dataset_kwargs.get("input_max_len", None)
     if input_max_len is not None:
-        get_logger().info("use input text max_len %s", input_max_len)
+        log_info("use input text max_len %s", input_max_len)
     apply_tokenizer_transforms(
         dc=dc, model_evaluator=model_evaluator, max_len=input_max_len, for_input=True
     )
@@ -206,7 +192,7 @@ def add_text_transforms(
         ):
             dc.append_transform(int_target_to_text, key=TransformType.Target)
         max_len = dc.dataset_kwargs.get("output_max_len", None)
-        get_logger().info("use output text max len %s", max_len)
+        log_info("use output text max len %s", max_len)
         apply_tokenizer_transforms(
             dc=dc, model_evaluator=model_evaluator, max_len=max_len, for_input=False
         )
