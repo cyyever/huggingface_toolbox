@@ -2,6 +2,7 @@ from .model import (
     HuggingFaceModelEvaluator,
 )
 from .tokenizer import HuggingFaceTokenizer
-from .dataset import HunggingFaceFactory
+from .dataset import *
+from .data_pipeline import *
 
-__all__ = ["HuggingFaceModelEvaluator", "HuggingFaceTokenizer", "HunggingFaceFactory"]
+__all__ = ["HuggingFaceModelEvaluator", "HuggingFaceTokenizer"]
