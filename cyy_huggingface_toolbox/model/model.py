@@ -40,6 +40,11 @@ def get_huggingface_constructor(
             transformers.AutoModelForTokenClassification,
             ModelType.TokenClassification,
         ),
+        (
+            "hugging_face_causal_lm_",
+            transformers.AutoModelForCausalLM,
+            ModelType.CausalLM,
+        ),
     ]
     for prefix, transformers_module, model_type in prefix_to_module:
         if model_name.startswith(prefix):
