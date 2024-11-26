@@ -27,12 +27,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         assert isinstance(inputs, transformers.BatchEncoding | dict)
         if "inputs_embeds" not in inputs:
             input_ids = inputs["input_ids"]
-            if hasattr(self.model, "distilbert"):
-                assert isinstance(input_ids, torch.Tensor)
-                if len(list(input_ids.shape)) == 1:
-                    input_ids = input_ids.unsqueeze(dim=0)
-                embeddings = self.model.distilbert.embeddings(input_ids).detach()
-            elif hasattr(self.model, "bert"):
+            if isinstance(self.model, transformers.PreTrainedModel):
                 embeddings = self.model.get_input_embeddings()(input_ids).detach()
             else:
                 raise NotImplementedError(self.model)
