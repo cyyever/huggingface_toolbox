@@ -11,7 +11,9 @@ class HuggingFaceTokenizer(Tokenizer):
     def __init__(self, tokenizer_config: dict) -> None:
         self.__tokenizer: transformers.PreTrainedTokenizer = (
             transformers.AutoTokenizer.from_pretrained(
-                tokenizer_config["name"], **tokenizer_config.get("kwargs", {})
+                tokenizer_config["name"],
+                **tokenizer_config.get("kwargs", {}),
+                use_fast=True,
             )
         )
 
