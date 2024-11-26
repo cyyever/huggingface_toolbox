@@ -2,8 +2,7 @@ import functools
 from typing import Callable, Any
 
 import transformers
-import transformers.models
-from cyy_naive_lib.log import get_logger
+from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
 
 
@@ -15,7 +14,7 @@ def __create_huggingface_model(
 ) -> Callable:
     if pretrained:
         return transformers_module.from_pretrained(model_name, **model_kwargs)
-    get_logger().warning("use huggingface without pretrained parameters")
+    log_warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
     model = transformers_module.from_config(config)
     return model
