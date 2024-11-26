@@ -12,14 +12,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         super().__init__(model=model, **kwargs)
         self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
 
-    def split_batch_input(self, inputs: Any, *args: Any, **kwargs: Any) -> dict:
+    def split_batch_input(self, inputs: Any, batch_size: int) -> dict:
         batch_dim = 0
         new_inputs = []
-        if isinstance(inputs, transformers.BatchEncoding | dict):
-            first_value = next(iter(inputs.values()))
-            assert isinstance(first_value, torch.Tensor)
-            for i in range(first_value.size(dim=0)):
-                new_inputs.append({k: v[i].unsqueeze(dim=0) for k, v in inputs.items()})
+        if isinstance(inputs, transformers.BatchEncoding):
+            for i in range(batch_size):
+                new_inputs.append(inputs.sequence_ids(i))
             return {"inputs": new_inputs, "batch_dim": batch_dim}
         return {"inputs": inputs, "batch_dim": batch_dim}
 
