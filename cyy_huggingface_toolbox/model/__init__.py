@@ -54,11 +54,13 @@ class HuggingFaceModelFactory(Factory):
         real_name: str,
         model_type: ModelType,
         constructor: Callable,
-        dataset_collection: DatasetCollection,
+        dataset_collection: DatasetCollection | None = None,
         **kwargs: Any,
     ) -> dict:
         final_model_kwargs: dict = kwargs
-        tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
+        tokenizer_kwargs = {}
+        if dataset_collection is not None:
+            tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
         tokenizer_kwargs["name"] = real_name
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
         log_debug("tokenizer is %s", tokenizer)
