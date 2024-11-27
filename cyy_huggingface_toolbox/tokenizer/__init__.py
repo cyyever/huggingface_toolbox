@@ -61,9 +61,8 @@ class HuggingFaceTokenizer(Tokenizer):
         ]
 
     def get_token_ids_from_transformed_result(
-        self, transformed_result: Any
+        self, transformed_result: transformers.BatchEncoding
     ) -> TokenIDsType:
-        assert isinstance(transformed_result, transformers.BatchEncoding)
         input_ids_tensor = transformed_result["input_ids"]
         assert isinstance(input_ids_tensor, torch.Tensor)
         return input_ids_tensor.squeeze()
