@@ -1,9 +1,17 @@
 import functools
+import os
 from typing import Callable, Any
 
 import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
+
+
+def __get_cache_dir() -> str:
+    cache_dir = os.getenv("PYTORCH_MODEL_CACHE_ROOT_DIR")
+    if cache_dir is None:
+        return os.path.join(os.path.expanduser("~"), "huggingface_models")
+    return cache_dir
 
 
 def __create_huggingface_model(
@@ -12,6 +20,8 @@ def __create_huggingface_model(
     pretrained: bool,
     **model_kwargs,
 ) -> Callable:
+    if "cache_dir" not in model_kwargs:
+        model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained:
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     log_warning("use huggingface without pretrained parameters")
