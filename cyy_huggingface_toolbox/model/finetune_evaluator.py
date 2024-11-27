@@ -4,7 +4,7 @@ from peft.mapping import get_peft_model
 from cyy_torch_toolbox import ModelType
 from transformers import PreTrainedModel
 from peft.utils.peft_types import TaskType
-from peft import LoraConfig
+from peft import LoraConfig, PeftModel
 
 from .evaluator import HuggingFaceModelEvaluator
 
@@ -28,3 +28,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             task_type=TaskType.CAUSAL_LM,
         )
         self.set_model(get_peft_model(model=model, peft_config=peft_config))
+
+    @property
+    def model(self) -> PeftModel:
+        return super().model
