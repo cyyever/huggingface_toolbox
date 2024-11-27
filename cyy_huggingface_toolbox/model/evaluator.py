@@ -12,7 +12,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         super().__init__(model=model, **kwargs)
         self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
 
-    def split_batch_input(self, inputs: Any, *args: Any, **kwargs: Any) -> dict:
+    def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict:
         batch_dim = 0
         new_inputs = []
         batch_size: int = kwargs["batch_size"]
