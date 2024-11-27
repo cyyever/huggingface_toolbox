@@ -55,11 +55,8 @@ class HuggingFaceTokenizer(Tokenizer):
     def get_mask_token(self) -> str:
         return self.__tokenizer.mask_token
 
-    def tokenize(self, phrase: str) -> list[str]:
-        encoding = self.__tokenizer(phrase, return_tensors="pt", truncation=False)
-        return [
-            token for token in encoding.tokens() if token not in self.special_tokens
-        ]
+    def tokenize(self, phrase: str) -> transformers.BatchEncoding:
+        return self.__tokenizer(phrase, return_tensors="pt", truncation=False)
 
     def get_token_ids_from_transformed_result(
         self, transformed_result: transformers.BatchEncoding

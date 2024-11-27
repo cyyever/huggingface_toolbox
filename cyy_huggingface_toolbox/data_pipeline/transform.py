@@ -31,7 +31,7 @@ def squeeze_huggingface_input(huggingface_input: dict) -> dict:
     return huggingface_input
 
 
-def tokenize_and_align_labels(tokenizer: transformers.PreTrainedTokenizer, examples):
+def tokenize_and_align_labels(tokenizer: transformers.PreTrainedTokenizerFast, examples):
     tokenized_inputs = tokenizer(
         examples["tokens"], truncation=True, is_split_into_words=True
     )
