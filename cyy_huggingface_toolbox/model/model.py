@@ -1,7 +1,9 @@
 import functools
+import torch
 import os
 from typing import Callable, Any
 
+from transformers import BitsAndBytesConfig
 import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
@@ -23,6 +25,16 @@ def __create_huggingface_model(
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained:
+        if "load_in_4bit" in model_kwargs:
+            model_kwargs.pop("load_in_4bit")
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_use_double_quant=False,
+                bnb_4bit_quant_type="nf4",
+            )
+            model_kwargs["quantization_config"] = bnb_config
+            model_kwargs["torch_dtype"] = torch.bfloat16
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     log_warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
