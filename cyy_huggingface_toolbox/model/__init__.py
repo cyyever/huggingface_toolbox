@@ -3,7 +3,7 @@ import functools
 from collections.abc import Callable
 import transformers
 
-from cyy_naive_lib.log import log_debug
+from cyy_naive_lib.log import log_debug, log_warning
 from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory, ModelType
 from cyy_torch_toolbox.model import (
     create_model,
@@ -12,6 +12,7 @@ from cyy_torch_toolbox.model import (
     ModelEvaluator,
 )
 from .evaluator import HuggingFaceModelEvaluator
+from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
 from ..tokenizer import HuggingFaceTokenizer
 
@@ -20,6 +21,10 @@ def __get_model_evaluator(
     model: Any, **kwargs: Any
 ) -> HuggingFaceModelEvaluator | ModelEvaluator | None:
     if isinstance(model, transformers.PreTrainedModel):
+        if "need_finetune" in kwargs:
+            kwargs.pop("need_finetune")
+            return HuggingFaceModelEvaluatorForFinetune(model=model, **kwargs)
+        log_warning("Not finetune")
         return HuggingFaceModelEvaluator(model=model, **kwargs)
     return None
 

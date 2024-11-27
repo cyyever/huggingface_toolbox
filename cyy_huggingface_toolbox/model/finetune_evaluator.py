@@ -9,7 +9,7 @@ from peft import LoraConfig
 from .evaluator import HuggingFaceModelEvaluator
 
 
-class FinetuneHuggingFaceModelEvaluator(HuggingFaceModelEvaluator):
+class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         model = self.model
