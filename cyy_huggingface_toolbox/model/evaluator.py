@@ -36,7 +36,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         return inputs
 
     def get_input_embedding(self, inputs: transformers.BatchEncoding) -> torch.Tensor:
-        return self.get_input_feature(inputs)["inputs_embeds"]
+        res = self.get_input_feature(inputs)["inputs_embeds"]
+        assert isinstance(res, torch.Tensor)
+        return res
 
     def _create_input(
         self,
