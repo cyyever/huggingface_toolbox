@@ -12,9 +12,10 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         super().__init__(model=model, **kwargs)
         self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
 
-    def split_batch_input(self, inputs: Any, batch_size: int) -> dict:
+    def split_batch_input(self, inputs: Any, *args: Any, **kwargs: Any) -> dict:
         batch_dim = 0
         new_inputs = []
+        batch_size: int = kwargs["batch_size"]
         if isinstance(inputs, transformers.BatchEncoding):
             for i in range(batch_size):
                 new_inputs.append(inputs.sequence_ids(i))
@@ -83,9 +84,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
 
     def _choose_loss_function(self) -> Callable:
         # Copied from hugging face
-        if getattr(self.model.config, "loss_type", None) is not None:
-            loss_type = self.model.config.loss_type
-        else:
+        loss_type = getattr(self.model.config, "loss_type", None)
+        if loss_type is None:
             loss_type = self.model.__class__.__name__
             if loss_type not in LOSS_MAPPING:
                 for predefined_loss_type in LOSS_MAPPING:
