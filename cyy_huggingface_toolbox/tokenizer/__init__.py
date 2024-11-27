@@ -1,6 +1,8 @@
 from collections.abc import Mapping
 from functools import cached_property
 from typing import Any
+from transformers import PreTrainedTokenizerFast
+
 
 import torch
 import transformers
@@ -9,13 +11,17 @@ from cyy_torch_toolbox import TokenIDsType, TokenIDType, Tokenizer
 
 class HuggingFaceTokenizer(Tokenizer):
     def __init__(self, tokenizer_config: dict) -> None:
-        self.__tokenizer: transformers.PreTrainedTokenizer = (
+        self.__tokenizer: transformers.PreTrainedTokenizerFast = (
             transformers.AutoTokenizer.from_pretrained(
                 tokenizer_config["name"],
                 **tokenizer_config.get("kwargs", {}),
                 use_fast=True,
             )
         )
+        if not self.__tokenizer.is_fast:
+            self.__tokenizer = PreTrainedTokenizerFast(
+                tokenizer_object=self.__tokenizer
+            )
 
     @cached_property
     def special_tokens(self) -> set[str]:
@@ -39,7 +45,7 @@ class HuggingFaceTokenizer(Tokenizer):
         return ids
 
     @property
-    def tokenizer(self) -> transformers.PreTrainedTokenizer:
+    def tokenizer(self) -> transformers.PreTrainedTokenizerFast:
         return self.__tokenizer
 
     def get_vocab(self) -> Mapping[str, int]:
