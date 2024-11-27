@@ -22,6 +22,7 @@ class HuggingFaceTokenizer(Tokenizer):
             self.__tokenizer = PreTrainedTokenizerFast(
                 tokenizer_object=self.__tokenizer
             )
+        assert self.__tokenizer.is_fast
 
     @cached_property
     def special_tokens(self) -> set[str]:
