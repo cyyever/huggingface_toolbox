@@ -4,7 +4,8 @@ from peft.mapping import get_peft_model
 from cyy_torch_toolbox import ModelType
 from transformers import PreTrainedModel
 from peft.utils.peft_types import TaskType
-from peft import LoraConfig, PeftModel
+from peft import LoraConfig
+from peft.peft_model import PeftModel
 
 from .evaluator import HuggingFaceModelEvaluator
 
