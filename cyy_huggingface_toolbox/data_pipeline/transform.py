@@ -1,24 +1,22 @@
 import functools
-import torch
 from typing import Any
 
+import torch
 import transformers
+from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     DatasetCollection,
-    ModelType,
-    ModelEvaluator,
-    TransformType,
-    default_data_extraction,
     DatasetType,
     MachineLearningPhase,
+    ModelEvaluator,
+    ModelType,
+    TransformType,
+    default_data_extraction,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
     int_target_to_text,
     replace_str,
 )
-
-
-from cyy_naive_lib.log import log_info
 
 from ..model import HuggingFaceModelEvaluator
 from ..tokenizer import HuggingFaceTokenizer

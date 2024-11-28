@@ -1,8 +1,8 @@
 import os
 
 from cyy_huggingface_toolbox import HuggingFaceModelEvaluator, HuggingFaceTokenizer
-from cyy_torch_toolbox.tokenizer import convert_phrase_to_token_ids
 from cyy_torch_toolbox import Config, Executor, Tokenizer
+from cyy_torch_toolbox.tokenizer import convert_phrase_to_token_ids
 
 os.environ["USE_THREAD_DATALOADER"] = "1"
 

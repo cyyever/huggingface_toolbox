@@ -1,12 +1,13 @@
 import functools
-import torch
 import os
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
-from transformers import BitsAndBytesConfig
+import torch
 import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
+from transformers import BitsAndBytesConfig
 
 
 def __get_cache_dir() -> str:

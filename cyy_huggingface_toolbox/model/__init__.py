@@ -1,20 +1,21 @@
-from typing import Any
 import functools
 from collections.abc import Callable
-import transformers
+from typing import Any
 
+import transformers
 from cyy_naive_lib.log import log_debug, log_warning
 from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory, ModelType
 from cyy_torch_toolbox.model import (
+    ModelEvaluator,
     create_model,
     global_model_evaluator_factory,
     global_model_factory,
-    ModelEvaluator,
 )
+
+from ..tokenizer import HuggingFaceTokenizer
 from .evaluator import HuggingFaceModelEvaluator
 from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
-from ..tokenizer import HuggingFaceTokenizer
 
 
 def __get_model_evaluator(

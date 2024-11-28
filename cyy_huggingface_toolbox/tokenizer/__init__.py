@@ -1,12 +1,11 @@
 from collections.abc import Mapping
 from functools import cached_property
 from typing import Any
-from transformers import PreTrainedTokenizerFast
-
 
 import torch
 import transformers
 from cyy_torch_toolbox import TokenIDsType, TokenIDType, Tokenizer
+from transformers import PreTrainedTokenizerFast
 
 
 class HuggingFaceTokenizer(Tokenizer):

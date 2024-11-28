@@ -1,10 +1,11 @@
-from typing import Any, Callable
-
 import functools
+from collections.abc import Callable
+from typing import Any
+
 import torch
 import transformers
+from cyy_torch_toolbox import ModelEvaluator, ModelType, Tokenizer
 from transformers.loss.loss_utils import LOSS_MAPPING
-from cyy_torch_toolbox import ModelEvaluator, Tokenizer, ModelType
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
