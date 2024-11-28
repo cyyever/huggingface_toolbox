@@ -27,6 +27,13 @@ class HunggingFaceFactory(DatasetFactory):
             split = Split.VALIDATION
         elif "test" in split:
             split = Split.TEST
+        assert isinstance(split, Split)
+        file_key = f"{str(split).lower()}_files"
+        if kwargs.get(file_key):
+            data_files = kwargs.pop(file_key)
+            assert data_files
+            path = os.path.splitext(data_files[0])[1][1:]
+            kwargs["data_files"] = data_files
         dataset = load_hugging_face_dataset(
             path=path, split=split, cache_dir=cache_dir, **kwargs
         )
@@ -41,7 +48,7 @@ class HunggingFaceFactory(DatasetFactory):
 
     @classmethod
     def __has_dataset(cls, key: Any, cache_dir: str) -> bool:
-        if key.endswith(".json"):
+        if key.startswith("hungging_face_"):
             return True
         if os.path.exists(cls.__dataset_cache_dir(cache_dir)):
             return True
