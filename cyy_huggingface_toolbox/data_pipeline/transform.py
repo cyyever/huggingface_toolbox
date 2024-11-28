@@ -140,7 +140,6 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
                 ),
             )
 
-    assert dc.dataset_type == DatasetType.Text
     dataset_name: str = dc.name.lower()
     # InputText
     if dataset_name == "imdb":
