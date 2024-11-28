@@ -1,10 +1,11 @@
+import copy
 import functools
 import os
 from typing import Any
 
 import dill
 from cyy_torch_toolbox.dataset import DatasetFactory
-from datasets import Split, load_dataset_builder
+from datasets import NamedSplit, Split, load_dataset_builder
 from datasets import load_dataset as load_hugging_face_dataset
 
 
@@ -27,16 +28,31 @@ class HunggingFaceFactory(DatasetFactory):
             split = Split.VALIDATION
         elif "test" in split:
             split = Split.TEST
-        assert isinstance(split, Split)
+        kwargs["split"] = split
+        # assert isinstance(split, NamedSplit)
         file_key = f"{str(split).lower()}_files"
+        load_local_file = False
         if kwargs.get(file_key):
+            load_local_file = True
+            kwargs = copy.deepcopy(kwargs)
             data_files = kwargs.pop(file_key)
             assert data_files
             path = os.path.splitext(data_files[0])[1][1:]
+            for k in list(kwargs.keys()):
+                if "_files" in k:
+                    kwargs.pop(k)
+            kwargs.pop("split")
             kwargs["data_files"] = data_files
-        dataset = load_hugging_face_dataset(
-            path=path, split=split, cache_dir=cache_dir, **kwargs
-        )
+        try:
+            dataset = load_hugging_face_dataset(
+                path=path, cache_dir=cache_dir, **kwargs
+            )
+            if load_local_file:
+                dataset = dataset["train"]
+        except BaseException as e:
+            if cls.__has_dataset(key=path, cache_dir=cache_dir):
+                return None
+            raise e
         if not os.path.isfile(cls.__dataset_cache_file(cache_dir, split)):
             os.makedirs(
                 os.path.join(cls.__dataset_cache_dir(cache_dir), ".cache", "hg_cache"),
@@ -48,7 +64,7 @@ class HunggingFaceFactory(DatasetFactory):
 
     @classmethod
     def __has_dataset(cls, key: Any, cache_dir: str) -> bool:
-        if key.startswith("hungging_face_"):
+        if key.startswith("hugging_face_"):
             return True
         if os.path.exists(cls.__dataset_cache_dir(cache_dir)):
             return True
