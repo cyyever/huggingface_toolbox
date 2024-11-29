@@ -110,7 +110,9 @@ def apply_tokenizer_transforms(
         dc.append_transform(
             functools.partial(
                 transformers.DataCollatorForLanguageModeling(
-                    tokenizer=model_evaluator.tokenizer.tokenizer, return_tensors="pt"
+                    tokenizer=model_evaluator.tokenizer.tokenizer,
+                    return_tensors="pt",
+                    mlm=False,
                 )
             ),
             key=batch_key,
