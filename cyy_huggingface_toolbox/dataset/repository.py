@@ -5,7 +5,7 @@ from typing import Any
 
 import dill
 from cyy_torch_toolbox.dataset import DatasetFactory
-from datasets import NamedSplit, Split, load_dataset_builder
+from datasets import Split, load_dataset_builder
 from datasets import load_dataset as load_hugging_face_dataset
 
 
@@ -29,7 +29,6 @@ class HunggingFaceFactory(DatasetFactory):
         elif "test" in split:
             split = Split.TEST
         kwargs["split"] = split
-        # assert isinstance(split, NamedSplit)
         file_key = f"{str(split).lower()}_files"
         load_local_file = False
         if kwargs.get(file_key):
@@ -54,10 +53,7 @@ class HunggingFaceFactory(DatasetFactory):
                 return None
             raise e
         if not os.path.isfile(cls.__dataset_cache_file(cache_dir, split)):
-            os.makedirs(
-                os.path.join(cls.__dataset_cache_dir(cache_dir), ".cache", "hg_cache"),
-                exist_ok=True,
-            )
+            os.makedirs(cls.__dataset_cache_dir(cache_dir), exist_ok=True)
             with open(cls.__dataset_cache_file(cache_dir, split), "wb") as f:
                 dill.dump(True, f)
         return dataset
