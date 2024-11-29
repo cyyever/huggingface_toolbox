@@ -87,7 +87,7 @@ def apply_tokenizer_transforms(
         )
         dc.append_transform(
             functools.partial(
-                transformers.DataCollatorForLanguageModeling(
+                transformers.DataCollatorForTokenClassification(
                     tokenizer=model_evaluator.tokenizer.tokenizer,
                     padding="max_length",
                     max_length=max_len,
@@ -109,10 +109,8 @@ def apply_tokenizer_transforms(
     if model_evaluator.model_type == ModelType.CausalLM:
         dc.append_transform(
             functools.partial(
-                transformers.DatasetCollectionF(
-                    tokenizer=model_evaluator.tokenizer.tokenizer,
-                    padding="max_length",
-                    max_length=max_len,
+                transformers.DataCollatorForLanguageModeling(
+                    tokenizer=model_evaluator.tokenizer.tokenizer, return_tensors="pt"
                 )
             ),
             key=batch_key,
