@@ -77,29 +77,7 @@ def apply_tokenizer_transforms(
     else:
         batch_key = TransformType.TargetBatch
         key = TransformType.Target
-    if model_evaluator.model_type != ModelType.TokenClassification:
-        assert max_len is not None
-        dc.append_transform(
-            functools.partial(
-                model_evaluator.tokenizer.tokenizer,
-                max_length=max_len,
-                padding="max_length",
-                return_tensors="pt",
-                truncation=True,
-            ),
-            key=key,
-        )
-        dc.append_transform(squeeze_huggingface_input, key=key)
-        dc.append_transform(
-            functools.partial(
-                transformers.DataCollatorWithPadding(
-                    tokenizer=model_evaluator.tokenizer.tokenizer,
-                    padding="max_length",
-                    max_length=max_len,
-                )
-            ),
-            key=batch_key,
-        )
+    assert max_len is not None
     if model_evaluator.model_type == ModelType.TokenClassification:
         dc.append_transform(
             functools.partial(
@@ -107,15 +85,37 @@ def apply_tokenizer_transforms(
             ),
             key=key,
         )
-        # dc.append_transform(collect_label, key=key)
         dc.append_transform(
             functools.partial(
                 transformers.DataCollatorForTokenClassification(
                     tokenizer=model_evaluator.tokenizer.tokenizer,
+                    padding="max_length",
+                    max_length=max_len,
                 )
             ),
             key=batch_key,
         )
+        return
+    dc.append_transform(
+        functools.partial(
+            model_evaluator.tokenizer.tokenizer,
+            max_length=max_len,
+            padding="max_length",
+            return_tensors="pt",
+            truncation=True,
+        ),
+        key=batch_key,
+    )
+    dc.append_transform(
+        functools.partial(
+            transformers.DataCollatorWithPadding(
+                tokenizer=model_evaluator.tokenizer.tokenizer,
+                padding="max_length",
+                max_length=max_len,
+            )
+        ),
+        key=batch_key,
+    )
 
 
 def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
