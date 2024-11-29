@@ -87,7 +87,7 @@ def apply_tokenizer_transforms(
         )
         dc.append_transform(
             functools.partial(
-                transformers.DataCollatorForTokenClassification(
+                transformers.DataCollatorForLanguageModeling(
                     tokenizer=model_evaluator.tokenizer.tokenizer,
                     padding="max_length",
                     max_length=max_len,
@@ -106,6 +106,18 @@ def apply_tokenizer_transforms(
         ),
         key=batch_key,
     )
+    if model_evaluator.model_type == ModelType.CausalLM:
+        dc.append_transform(
+            functools.partial(
+                transformers.DatasetCollectionF(
+                    tokenizer=model_evaluator.tokenizer.tokenizer,
+                    padding="max_length",
+                    max_length=max_len,
+                )
+            ),
+            key=batch_key,
+        )
+        return
     dc.append_transform(
         functools.partial(
             transformers.DataCollatorWithPadding(
@@ -174,23 +186,23 @@ def add_text_transforms(
         dc=dc, model_evaluator=model_evaluator, max_len=input_max_len, for_input=True
     )
 
-    # Target
-    if model_evaluator.model_type == ModelType.TextGeneration:
-        mapping = get_label_to_text_mapping(dataset_name)
-        if mapping is not None:
-            dc.append_transform(
-                functools.partial(int_target_to_text, mapping=mapping),
-                key=TransformType.Target,
-            )
-        elif isinstance(
-            dc.get_dataset_util(phase=MachineLearningPhase.Training).get_sample_label(
-                0
-            ),
-            int,
-        ):
-            dc.append_transform(int_target_to_text, key=TransformType.Target)
-        max_len = dc.dataset_kwargs.get("output_max_len", None)
-        log_info("use output text max len %s", max_len)
-        apply_tokenizer_transforms(
-            dc=dc, model_evaluator=model_evaluator, max_len=max_len, for_input=False
-        )
+    # # Target
+    # if model_evaluator.model_type == ModelType.TextGeneration:
+    #     mapping = get_label_to_text_mapping(dataset_name)
+    #     if mapping is not None:
+    #         dc.append_transform(
+    #             functools.partial(int_target_to_text, mapping=mapping),
+    #             key=TransformType.Target,
+    #         )
+    #     elif isinstance(
+    #         dc.get_dataset_util(phase=MachineLearningPhase.Training).get_sample_label(
+    #             0
+    #         ),
+    #         int,
+    #     ):
+    #         dc.append_transform(int_target_to_text, key=TransformType.Target)
+    #     max_len = dc.dataset_kwargs.get("output_max_len", None)
+    #     log_info("use output text max len %s", max_len)
+    #     apply_tokenizer_transforms(
+    #         dc=dc, model_evaluator=model_evaluator, max_len=max_len, for_input=False
+    #     )
