@@ -51,7 +51,7 @@ class HuggingFaceTokenizer(Tokenizer):
     def get_vocab(self) -> Mapping[str, int]:
         return self.__tokenizer.get_vocab()
 
-    def get_mask_token(self) -> str:
+    def get_mask_token(self) -> str | list[str] | None:
         return self.__tokenizer.mask_token
 
     def tokenize(self, phrase: str) -> transformers.BatchEncoding:

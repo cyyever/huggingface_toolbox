@@ -53,7 +53,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         *args: Any,
         **kwargs: Any,
     ) -> dict:
-        if self.model_type in (ModelType.Classification, ModelType.TokenClassification):
+        if self.model_type in (
+            ModelType.Classification,
+            ModelType.TokenClassification,
+            ModelType.CausalLM,
+        ):
             inputs["labels"] = targets
             if hasattr(targets, "input_ids"):
                 inputs["labels"] = targets.input_ids
