@@ -1,5 +1,4 @@
 import functools
-import time
 from collections.abc import Callable
 from typing import Any
 
@@ -99,15 +98,21 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             res["logits"] = kwargs["logits"]
         return res
 
+    def _choose_loss_function_type(self) -> None | type:
+        return None
+
     def _choose_loss_function(self) -> Callable:
+        loss_type = ""
+        kwargs = {}
+        match self.model_type:
+            case ModelType.Classification:
+                loss_type = "ForSequenceClassification"
+            case ModelType.TokenClassification:
+                loss_type = "ForTokenClassification"
+                kwargs["config"] = self.model.config
+            case ModelType.CausalLM:
+                loss_type = "ForCausalLM"
+                kwargs["vocab_size"] = len(self.tokenizer.get_vocab())
+
         # Copied from hugging face
-        loss_type = getattr(self.model.config, "loss_type", None)
-        if loss_type is None:
-            loss_type = self.model.__class__.__name__
-            if loss_type not in LOSS_MAPPING:
-                for predefined_loss_type in LOSS_MAPPING:
-                    if predefined_loss_type in loss_type:
-                        loss_type = predefined_loss_type
-                        break
-        assert loss_type is not None
-        return functools.partial(LOSS_MAPPING[loss_type], config=self.model.config)
+        return functools.partial(LOSS_MAPPING[loss_type], **kwargs)

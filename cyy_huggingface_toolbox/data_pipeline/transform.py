@@ -32,7 +32,7 @@ def tokenize_and_align_labels(
     tokenizer: transformers.PreTrainedTokenizerFast, examples
 ):
     tokenized_inputs = tokenizer(
-        examples["tokens"], truncation=True, is_split_into_words=True
+        examples["tokens"], padding=False, truncation=False, is_split_into_words=True
     )
 
     word_ids = tokenized_inputs.word_ids(
@@ -76,7 +76,12 @@ def apply_tokenizer_transforms(
     else:
         batch_key = TransformType.TargetBatch
         key = TransformType.Target
-    assert max_len is not None
+    tokenizer_kwargs = {
+        "padding": True,
+        "max_length": max_len,
+        "truncation": True,
+        "return_tensors": "pt",
+    }
     if model_evaluator.model_type == ModelType.TokenClassification:
         dc.append_transform(
             functools.partial(
@@ -87,9 +92,7 @@ def apply_tokenizer_transforms(
         dc.append_transform(
             functools.partial(
                 transformers.DataCollatorForTokenClassification(
-                    tokenizer=model_evaluator.tokenizer.tokenizer,
-                    padding="max_length",
-                    max_length=max_len,
+                    tokenizer=model_evaluator.tokenizer.tokenizer
                 )
             ),
             key=batch_key,
@@ -98,11 +101,8 @@ def apply_tokenizer_transforms(
     dc.append_transform(
         functools.partial(
             model_evaluator.tokenizer,
-            max_length=max_len,
-            padding="max_length",
-            return_tensors="pt",
             nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
-            truncation=True,
+            **tokenizer_kwargs,
         ),
         key=batch_key,
     )
@@ -121,9 +121,7 @@ def apply_tokenizer_transforms(
     dc.append_transform(
         functools.partial(
             transformers.DataCollatorWithPadding(
-                tokenizer=model_evaluator.tokenizer.tokenizer,
-                padding="max_length",
-                max_length=max_len,
+                tokenizer=model_evaluator.tokenizer.tokenizer, **tokenizer_kwargs
             )
         ),
         key=batch_key,
