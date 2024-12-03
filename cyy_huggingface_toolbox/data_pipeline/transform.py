@@ -14,7 +14,6 @@ from cyy_torch_toolbox import (
     default_data_extraction,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
-    int_target_to_text,
     replace_str,
 )
 
@@ -98,10 +97,11 @@ def apply_tokenizer_transforms(
         return
     dc.append_transform(
         functools.partial(
-            model_evaluator.tokenizer.tokenizer,
+            model_evaluator.tokenizer,
             max_length=max_len,
             padding="max_length",
             return_tensors="pt",
+            nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
             truncation=True,
         ),
         key=batch_key,

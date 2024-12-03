@@ -4,14 +4,16 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_torch_toolbox import ModelEvaluator, ModelType, Tokenizer
+from cyy_torch_toolbox import ModelEvaluator, ModelType
 from transformers.loss.loss_utils import LOSS_MAPPING
+
+from ..tokenizer import HuggingFaceTokenizer
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model, **kwargs: Any) -> None:
         super().__init__(model=model, **kwargs)
-        self.tokenizer: Tokenizer = kwargs.pop("tokenizer", None)
+        self.tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
     @property
     def model(self) -> transformers.PreTrainedModel:

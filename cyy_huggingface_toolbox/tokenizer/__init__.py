@@ -23,6 +23,14 @@ class HuggingFaceTokenizer(Tokenizer):
             )
         assert self.__tokenizer.is_fast
 
+    def __call__(
+        self, *args, nested_batch_encoding: bool = False, **kwargs
+    ) -> transformers.BatchEncoding | list[transformers.BatchEncoding]:
+        res = self.__tokenizer(*args, **kwargs)
+        if nested_batch_encoding:
+            return [res]
+        return res
+
     @cached_property
     def special_tokens(self) -> set[str]:
         tokens = set()
