@@ -35,7 +35,7 @@ def __create_huggingface_model(
                 bnb_4bit_quant_type="nf4",
             )
             model_kwargs["quantization_config"] = bnb_config
-            model_kwargs["torch_dtype"] = torch.bfloat16
+        model_kwargs["torch_dtype"] = torch.bfloat16
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     log_warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
