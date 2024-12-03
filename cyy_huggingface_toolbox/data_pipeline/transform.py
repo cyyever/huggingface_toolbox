@@ -174,7 +174,6 @@ def add_text_transforms(
     dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator
 ) -> None:
     assert dc.dataset_type in (DatasetType.Text, DatasetType.CodeText)
-    dataset_name: str = dc.name.lower()
     # InputText
     assert model_evaluator.model_type is not None
 
