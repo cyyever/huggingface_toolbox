@@ -1,4 +1,5 @@
 import functools
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -55,6 +56,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         *args: Any,
         **kwargs: Any,
     ) -> dict:
+        if self.model_type in (ModelType.CausalLM,):
+            for v in inputs.values():
+                if isinstance(v, torch.Tensor):
+                    v.squeeze_(dim=0)
+            targets.squeeze_(dim=0)
         if self.model_type in (
             ModelType.Classification,
             ModelType.TokenClassification,
