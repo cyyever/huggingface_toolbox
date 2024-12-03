@@ -9,8 +9,10 @@ os.environ["USE_THREAD_DATALOADER"] = "1"
 
 def tokenizer_testcases(executor: Executor, tokenizer: Tokenizer) -> None:
     phrase = "hello world!"
-    tokens = tokenizer.tokenize(phrase=phrase)
-    assert tokens == ["hello", "world", "!"]
+    tokens = tokenizer.get_tokens_from_transformed_result(
+        tokenizer.tokenize(phrase=phrase)
+    )
+    assert tokens == ["[CLS]", "hello", "world", "!", "[SEP]"]
     for token in tokens:
         token_id = tokenizer.get_token_id(token)
         recovered_token = tokenizer.get_token(token_id)

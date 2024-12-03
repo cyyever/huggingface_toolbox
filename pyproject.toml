@@ -25,10 +25,6 @@ Repository = "https://github.com/cyyever/huggingface_toolbox"
 
 [tool.pyright]
 include = ["cyy_huggingface_toolbox"]
-defineConstant = { DEBUG = true }
-
-reportMissingImports = true
-reportMissingTypeStubs = false
 
 [tool.ruff]
 target-version = "py312"
