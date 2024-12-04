@@ -94,9 +94,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "is_averaged_loss": True,
         }
         if self.model_type == ModelType.CausalLM:
-            res["loss_batch_size"] = (targets[..., 1:] != -100).sum()
+            res["loss_batch_size"] = (targets[..., 1:] != -100).sum().item()
         else:
-            res["loss_batch_size"] = (targets.view(-1) != -100).sum()
+            res["loss_batch_size"] = (targets.view(-1) != -100).sum().item()
         # print(
         #     "loss_batch_size is",
         #     res["loss_batch_size"].item(),
