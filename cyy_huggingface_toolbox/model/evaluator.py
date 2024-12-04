@@ -92,8 +92,18 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         res = {
             "loss": loss,
             "is_averaged_loss": True,
-            "loss_batch_size": (targets.view(-1) != -100).sum(),
         }
+        if self.model_type == ModelType.CausalLM:
+            res["loss_batch_size"] = (targets[..., 1:] != -100).sum()
+        else:
+            res["loss_batch_size"] = (targets.view(-1) != -100).sum()
+        # print(
+        #     "loss_batch_size is",
+        #     res["loss_batch_size"].item(),
+        #     "shape is ",
+        #     targets.shape,
+        # )
+        # print("vocab", len(self.tokenizer.get_vocab()))
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
         return res
