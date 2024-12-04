@@ -3,16 +3,16 @@ from typing import Any
 import torch.nn
 from cyy_naive_lib.fs.tempdir import TempDir
 from cyy_torch_toolbox import ModelType
-from peft import LoraConfig
 from peft.auto import AutoPeftModelForCausalLM
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
+from peft.tuners.lora.config import LoraConfig
 from peft.utils.peft_types import TaskType
-from peft.utils.save_and_load import (
-    get_peft_model_state_dict,
-    set_peft_model_state_dict,
-)
 
+# from peft.utils.save_and_load import (
+#     get_peft_model_state_dict,
+#     set_peft_model_state_dict,
+# )
 from .evaluator import HuggingFaceModelEvaluator
 
 
@@ -21,15 +21,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         super().__init__(**kwargs)
         assert self.model_type == ModelType.CausalLM
         peft_config = LoraConfig(
-            target_modules=[
-                "q_proj",
-                "o_proj",
-                "k_proj",
-                "v_proj",
-                "gate_proj",
-                "up_proj",
-                "down_proj",
-            ],
+            target_modules=kwargs.pop("finetune_modules"),
             task_type=TaskType.CAUSAL_LM,
         )
         self.set_model(get_peft_model(model=self.model, peft_config=peft_config))
@@ -44,7 +36,6 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             self.model.save_pretrained(dir_path)
             model = AutoPeftModelForCausalLM.from_pretrained(dir_path)
             self.set_model(model)
-            print(self.model)
 
         # assert isinstance(model, PeftModel)
         # print(model)

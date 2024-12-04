@@ -25,7 +25,7 @@ def __create_huggingface_model(
 ) -> Callable:
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
-    if pretrained:
+    if pretrained or "need_finetune" in model_kwargs:
         if "load_in_4bit" in model_kwargs:
             model_kwargs.pop("load_in_4bit")
             bnb_config = BitsAndBytesConfig(
@@ -35,7 +35,7 @@ def __create_huggingface_model(
                 bnb_4bit_quant_type="nf4",
             )
             model_kwargs["quantization_config"] = bnb_config
-        model_kwargs["torch_dtype"] = torch.bfloat16
+            model_kwargs["torch_dtype"] = torch.bfloat16
         return transformers_module.from_pretrained(model_name, **model_kwargs)
     log_warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)

@@ -36,6 +36,8 @@ class HunggingFaceFactory(DatasetFactory):
             kwargs = copy.deepcopy(kwargs)
             data_files = kwargs.pop(file_key)
             assert data_files
+            if isinstance(data_files, str):
+                data_files = [data_files]
             path = os.path.splitext(data_files[0])[1][1:]
             for k in list(kwargs.keys()):
                 if "_files" in k:
