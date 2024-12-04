@@ -1,8 +1,10 @@
 from typing import Any
 
 import torch.nn
+from cyy_naive_lib.fs.tempdir import TempDir
 from cyy_torch_toolbox import ModelType
 from peft import LoraConfig
+from peft.auto import AutoPeftModelForCausalLM
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
 from peft.utils.peft_types import TaskType
@@ -37,11 +39,20 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         assert isinstance(_model, PeftModel)
         return _model
 
-    def load_model_for_infenrence(self, model: torch.nn.Module) -> None:
-        assert isinstance(model, PeftModel)
-        if self.model is model:
-            return
-        set_peft_model_state_dict(
-            model=self.peft_model,
-            peft_model_state_dict=get_peft_model_state_dict(model=model),
-        )
+    def load_model_for_inference(self, model: torch.nn.Module) -> None:
+        with TempDir() as dir_path:
+            self.model.save_pretrained(dir_path)
+            model = AutoPeftModelForCausalLM.from_pretrained(dir_path)
+            self.set_model(model)
+            print(self.model)
+
+        # assert isinstance(model, PeftModel)
+        # print(model)
+        # model.dequantize()
+        # print(model)
+        # if self.model is model:
+        #     return
+        # set_peft_model_state_dict(
+        #     model=self.peft_model,
+        #     peft_model_state_dict=get_peft_model_state_dict(model=model),
+        # )
