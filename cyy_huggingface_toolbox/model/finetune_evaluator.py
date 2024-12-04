@@ -37,7 +37,8 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         assert isinstance(_model, PeftModel)
         return _model
 
-    def load_model(self, model: torch.nn.Module) -> None:
+    def load_model_for_infenrence(self, model: torch.nn.Module) -> None:
+        assert isinstance(model, PeftModel)
         if self.model is model:
             return
         set_peft_model_state_dict(
