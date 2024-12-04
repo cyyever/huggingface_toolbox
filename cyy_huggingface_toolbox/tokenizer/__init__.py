@@ -17,11 +17,13 @@ class HuggingFaceTokenizer(Tokenizer):
                 use_fast=True,
             )
         )
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = "left"
+
         if not self.__tokenizer.is_fast:
-            self.__tokenizer = PreTrainedTokenizerFast(
-                tokenizer_object=self.__tokenizer
-            )
-        assert self.__tokenizer.is_fast
+            self.__tokenizer = PreTrainedTokenizerFast(tokenizer_object=self.tokenizer)
+        assert self.tokenizer.is_fast
 
     def __call__(
         self, *args, nested_batch_encoding: bool = False, **kwargs
