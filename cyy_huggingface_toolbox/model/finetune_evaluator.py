@@ -4,6 +4,7 @@ from typing import Any
 import torch.nn
 from cyy_naive_lib.fs.tempdir import TempDir
 from cyy_torch_toolbox import ModelType, TensorDict
+from cyy_torch_toolbox.concurrency import TorchProcessPool
 from peft.auto import AutoPeftModelForCausalLM
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
@@ -36,18 +37,28 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
     @classmethod
     def get_perf_model_state_dict(cls, model: torch.nn.Module) -> TensorDict:
         assert isinstance(model, PeftModel)
-        with TempDir() as dir_path:
-            model.save_pretrained(dir_path)
-            model = AutoPeftModelForCausalLM.from_pretrained(dir_path)
-            return get_peft_model_state_dict(model=model)
+        return get_peft_model_state_dict(model)
+        # with TempDir() as dir_path:
+        #     model.save_pretrained(dir_path)
+        #     pool = TorchProcessPool()
+        #     pool.submit(
+        #         lambda dir_path: get_peft_model_state_dict(
+        #             AutoPeftModelForCausalLM.from_pretrained(dir_path)
+        #         ),
+        #         dir_path,
+        #     )
+        #     res, _ = pool.wait_results()
+        #     assert len(res) == 1
+        #     return list(res.values())[0]
+
+    def load_perf_model_state_dict(self, state_dict: TensorDict) -> None:
+        set_peft_model_state_dict(
+            model=self.peft_model, peft_model_state_dict=state_dict
+        )
 
     def load_model_for_inference(self, model: torch.nn.Module) -> None:
         if self.model is model:
             self.set_model(copy.copy(model))
-
-        set_peft_model_state_dict(
-            model=self.peft_model,
-            peft_model_state_dict=HuggingFaceModelEvaluatorForFinetune.get_perf_model_state_dict(
-                model
-            ),
+        self.load_perf_model_state_dict(
+            HuggingFaceModelEvaluatorForFinetune.get_perf_model_state_dict(model)
         )
