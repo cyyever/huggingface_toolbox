@@ -27,6 +27,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         )
         self.set_model(get_peft_model(model=self.model, peft_config=peft_config))
 
+    @property
     def peft_model(self) -> PeftModel:
         _model = self.model
         assert isinstance(_model, PeftModel)
