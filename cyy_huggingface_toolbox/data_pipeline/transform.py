@@ -1,15 +1,14 @@
 import functools
 from typing import Any
 
-import torch
 import transformers
 from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     DatasetCollection,
     DatasetType,
-    MachineLearningPhase,
     ModelEvaluator,
     ModelType,
+    TextDatasetCollection,
     TransformType,
     default_data_extraction,
 )
@@ -21,25 +20,22 @@ from ..model import HuggingFaceModelEvaluator
 from ..tokenizer import HuggingFaceTokenizer
 
 
-def squeeze_huggingface_input(huggingface_input: dict) -> dict:
-    for k, v in huggingface_input.items():
-        if isinstance(v, torch.Tensor):
-            huggingface_input[k] = huggingface_input[k].squeeze(dim=0)
-    return huggingface_input
+def str_concat(prefix: str, example: str) -> str:
+    return prefix + example
 
 
 def tokenize_and_align_labels(
-    tokenizer: transformers.PreTrainedTokenizerFast, examples
-):
+    tokenizer: transformers.PreTrainedTokenizerFast, example
+) -> transformers.BatchEncoding:
     tokenized_inputs = tokenizer(
-        examples["tokens"], padding=False, truncation=False, is_split_into_words=True
+        example["tokens"], padding=False, truncation=False, is_split_into_words=True
     )
 
     word_ids = tokenized_inputs.word_ids(
         batch_index=0
     )  # Map tokens to their respective word.
     previous_word_idx: None | int = None
-    label = examples["ner_tags"]
+    label = example["ner_tags"]
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
@@ -66,16 +62,11 @@ def apply_tokenizer_transforms(
     dc: DatasetCollection,
     model_evaluator: HuggingFaceModelEvaluator,
     max_len: int | None,
-    for_input: bool,
 ) -> None:
     if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
         return
-    if for_input:
-        batch_key = TransformType.InputBatch
-        key = TransformType.Input
-    else:
-        batch_key = TransformType.TargetBatch
-        key = TransformType.Target
+    batch_key = TransformType.InputBatch
+    key = TransformType.Input
     tokenizer_kwargs = {
         "padding": True,
         "max_length": max_len,
@@ -117,7 +108,14 @@ def apply_tokenizer_transforms(
             ),
             key=batch_key,
         )
+        assert isinstance(dc, TextDatasetCollection)
+        if dc.prompt is not None:
+            dc.set_transform(
+                functools.partial(str_concat, dc.prompt),
+                key=TransformType.InputTextLast,
+            )
         return
+    tokenizer_kwargs.pop("truncation")
     dc.append_transform(
         functools.partial(
             transformers.DataCollatorWithPadding(
@@ -176,30 +174,9 @@ def add_text_transforms(
     assert model_evaluator.model_type is not None
 
     # Input && InputBatch
-    input_max_len = dc.dataset_kwargs.get("input_max_len", None)
+    input_max_len: int | None = dc.dataset_kwargs.get("input_max_len", None)
     if input_max_len is not None:
         log_info("use input text max_len %s", input_max_len)
     apply_tokenizer_transforms(
-        dc=dc, model_evaluator=model_evaluator, max_len=input_max_len, for_input=True
+        dc=dc, model_evaluator=model_evaluator, max_len=input_max_len
     )
-
-    # # Target
-    # if model_evaluator.model_type == ModelType.TextGeneration:
-    #     mapping = get_label_to_text_mapping(dataset_name)
-    #     if mapping is not None:
-    #         dc.append_transform(
-    #             functools.partial(int_target_to_text, mapping=mapping),
-    #             key=TransformType.Target,
-    #         )
-    #     elif isinstance(
-    #         dc.get_dataset_util(phase=MachineLearningPhase.Training).get_sample_label(
-    #             0
-    #         ),
-    #         int,
-    #     ):
-    #         dc.append_transform(int_target_to_text, key=TransformType.Target)
-    #     max_len = dc.dataset_kwargs.get("output_max_len", None)
-    #     log_info("use output text max len %s", max_len)
-    #     apply_tokenizer_transforms(
-    #         dc=dc, model_evaluator=model_evaluator, max_len=max_len, for_input=False
-    #     )
