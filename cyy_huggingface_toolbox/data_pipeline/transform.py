@@ -20,10 +20,6 @@ from ..model import HuggingFaceModelEvaluator
 from ..tokenizer import HuggingFaceTokenizer
 
 
-def str_concat(prefix: str, example: str) -> str:
-    return prefix + example
-
-
 def tokenize_and_align_labels(
     tokenizer: transformers.PreTrainedTokenizerFast, example
 ) -> transformers.BatchEncoding:
@@ -108,12 +104,6 @@ def apply_tokenizer_transforms(
             ),
             key=batch_key,
         )
-        assert isinstance(dc, TextDatasetCollection)
-        if dc.prompt is not None:
-            dc.set_transform(
-                functools.partial(str_concat, dc.prompt),
-                key=TransformType.InputTextLast,
-            )
         return
     tokenizer_kwargs.pop("truncation")
     dc.append_transform(
