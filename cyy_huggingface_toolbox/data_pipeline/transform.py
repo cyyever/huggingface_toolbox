@@ -5,12 +5,9 @@ import transformers
 from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     DatasetCollection,
-    DatasetType,
-    ModelEvaluator,
     ModelType,
-    TextDatasetCollection,
+    # TextDatasetCollection,
     Transform,
-    TransformType,
     default_data_extraction,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
@@ -66,8 +63,6 @@ def apply_tokenizer_transforms(
     if input_max_len is not None:
         log_info("use input text max_len %s", input_max_len)
 
-    batch_key = TransformType.InputBatch
-    key = TransformType.Input
     tokenizer_kwargs = {
         "padding": True,
         "max_length": input_max_len,
@@ -75,49 +70,61 @@ def apply_tokenizer_transforms(
         "return_tensors": "pt",
     }
     if model_evaluator.model_type == ModelType.TokenClassification:
-        dc.append_transform(
-            functools.partial(
-                tokenize_and_align_labels, model_evaluator.tokenizer.tokenizer
-            ),
-            key=key,
+        dc.append_named_transform(
+            Transform(
+                fun=functools.partial(
+                    tokenize_and_align_labels, model_evaluator.tokenizer.tokenizer
+                ),
+                cacheable=True,
+            )
         )
-        dc.append_transform(
-            functools.partial(
-                transformers.DataCollatorForTokenClassification(
-                    tokenizer=model_evaluator.tokenizer.tokenizer
-                )
-            ),
-            key=batch_key,
+        dc.append_named_transform(
+            Transform(
+                fun=functools.partial(
+                    transformers.DataCollatorForTokenClassification(
+                        tokenizer=model_evaluator.tokenizer.tokenizer
+                    )
+                ),
+                for_batch=True,
+            )
         )
         return
-    dc.append_transform(
-        functools.partial(
-            model_evaluator.tokenizer,
-            nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
-            **tokenizer_kwargs,
-        ),
-        key=batch_key,
+    dc.append_named_transform(
+        Transform(
+            fun=functools.partial(
+                model_evaluator.tokenizer,
+                nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
+                **tokenizer_kwargs,
+            ),
+            component="input",
+            for_batch=True,
+        )
     )
     if model_evaluator.model_type == ModelType.CausalLM:
-        dc.append_transform(
-            functools.partial(
-                transformers.DataCollatorForLanguageModeling(
-                    tokenizer=model_evaluator.tokenizer.tokenizer,
-                    return_tensors="pt",
-                    mlm=False,
-                )
-            ),
-            key=batch_key,
+        dc.append_named_transform(
+            Transform(
+                for_batch=True,
+                fun=functools.partial(
+                    transformers.DataCollatorForLanguageModeling(
+                        tokenizer=model_evaluator.tokenizer.tokenizer,
+                        return_tensors="pt",
+                        mlm=False,
+                    )
+                ),
+            )
         )
         return
     tokenizer_kwargs.pop("truncation")
-    dc.append_transform(
-        functools.partial(
-            transformers.DataCollatorWithPadding(
-                tokenizer=model_evaluator.tokenizer.tokenizer, **tokenizer_kwargs
-            )
-        ),
-        key=batch_key,
+    dc.append_named_transform(
+        Transform(
+            for_batch=True,
+            fun=functools.partial(
+                transformers.DataCollatorWithPadding(
+                    tokenizer=model_evaluator.tokenizer.tokenizer, **tokenizer_kwargs
+                )
+            ),
+            component="input",
+        )
     )
 
 
