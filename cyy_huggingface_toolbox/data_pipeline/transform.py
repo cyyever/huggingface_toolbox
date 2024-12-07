@@ -9,6 +9,7 @@ from cyy_torch_toolbox import (
     ModelEvaluator,
     ModelType,
     TextDatasetCollection,
+    Transform,
     TransformType,
     default_data_extraction,
 )
@@ -57,15 +58,19 @@ def tokenize_and_align_labels(
 def apply_tokenizer_transforms(
     dc: DatasetCollection,
     model_evaluator: HuggingFaceModelEvaluator,
-    max_len: int | None,
 ) -> None:
     if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
         return
+
+    input_max_len: int | None = dc.dataset_kwargs.get("input_max_len", None)
+    if input_max_len is not None:
+        log_info("use input text max_len %s", input_max_len)
+
     batch_key = TransformType.InputBatch
     key = TransformType.Input
     tokenizer_kwargs = {
         "padding": True,
-        "max_length": max_len,
+        "max_length": input_max_len,
         "truncation": True,
         "return_tensors": "pt",
     }
@@ -127,23 +132,25 @@ def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
 
 
 def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
-    if model_evaluator is not None:
-        assert isinstance(model_evaluator, ModelEvaluator)
-        for _, transform in dc.foreach_transform():
-            transform.clear(TransformType.ExtractData)
-            transform.append(
-                key=TransformType.ExtractData,
-                transform=functools.partial(
-                    huggingface_data_extraction, model_evaluator.model_type
-                ),
-            )
+    dc.clear_pipelines()
+    dc.append_named_transform(
+        Transform(
+            fun=functools.partial(
+                huggingface_data_extraction, model_evaluator.model_type
+            ),
+            cacheable=True,
+        )
+    )
 
     dataset_name: str = dc.name.lower()
     # InputText
     if dataset_name == "imdb":
-        dc.append_transform(
-            functools.partial(replace_str, old="<br />", new=""),
-            key=TransformType.InputText,
+        dc.append_named_transform(
+            Transform(
+                fun=functools.partial(replace_str, old="<br />", new=""),
+                component="input",
+                cacheable=True,
+            ),
         )
 
 
@@ -159,14 +166,5 @@ def get_label_to_text_mapping(dataset_name: str) -> dict | None:
 def add_text_transforms(
     dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator
 ) -> None:
-    assert dc.dataset_type in (DatasetType.Text, DatasetType.CodeText)
-    # InputText
-    assert model_evaluator.model_type is not None
-
-    # Input && InputBatch
-    input_max_len: int | None = dc.dataset_kwargs.get("input_max_len", None)
-    if input_max_len is not None:
-        log_info("use input text max_len %s", input_max_len)
-    apply_tokenizer_transforms(
-        dc=dc, model_evaluator=model_evaluator, max_len=input_max_len
-    )
+    add_text_extraction(dc=dc, model_evaluator=model_evaluator)
+    apply_tokenizer_transforms(dc=dc, model_evaluator=model_evaluator)
