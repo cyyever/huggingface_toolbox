@@ -6,7 +6,7 @@ from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     DatasetCollection,
     ModelType,
-    # TextDatasetCollection,
+    TextDatasetCollection,
     Transform,
     default_data_extraction,
 )
@@ -159,6 +159,9 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
                 cacheable=True,
             ),
         )
+    if isinstance(dc, TextDatasetCollection):
+        for t in dc.get_text_pipeline().transforms:
+            dc.append_named_transform(t)
 
 
 def get_label_to_text_mapping(dataset_name: str) -> dict | None:
