@@ -117,6 +117,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         match self.model_type:
             case ModelType.Classification:
                 loss_type = "ForSequenceClassification"
+                kwargs["config"] = self.model.config
             case ModelType.TokenClassification:
                 loss_type = "ForTokenClassification"
                 kwargs["config"] = self.model.config
