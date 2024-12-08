@@ -4,11 +4,11 @@ from typing import Any
 import transformers
 from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
+    BatchTransform,
     DatasetCollection,
     ModelType,
     TextDatasetCollection,
     Transform,
-    BatchTransform,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
     replace_str,
