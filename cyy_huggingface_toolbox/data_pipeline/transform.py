@@ -109,6 +109,7 @@ def apply_tokenizer_transforms(
                         mlm=False,
                     )
                 ),
+                component="input",
             )
         )
         return

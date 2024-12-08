@@ -59,15 +59,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             for v in inputs.values():
                 if isinstance(v, torch.Tensor):
                     v.squeeze_(dim=0)
-            targets.squeeze_(dim=0)
+            assert "labels" in inputs
         if self.model_type in (
             ModelType.Classification,
             ModelType.TokenClassification,
-            ModelType.CausalLM,
         ):
             inputs["labels"] = targets
-            if hasattr(targets, "input_ids"):
-                inputs["labels"] = targets.input_ids
         else:
             assert targets is None
         return inputs
@@ -78,13 +75,10 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
-        return self._compute_loss(*args, **output, **kwargs)
+        return self._compute_loss(**model_input, **output)
 
     def _compute_loss(self, **kwargs: Any) -> dict:
         assert kwargs.pop("reduce_loss", True)
-        targets = kwargs["targets"]
-        if "labels" not in kwargs:
-            kwargs["labels"] = kwargs["targets"]
         if "pooled_logits" not in kwargs:
             kwargs["pooled_logits"] = kwargs["logits"]
         loss = self.loss_fun(**kwargs)
@@ -94,16 +88,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "is_averaged_loss": True,
         }
         if self.model_type == ModelType.CausalLM:
-            res["loss_batch_size"] = (targets[..., 1:] != -100).sum().item()
+            res["loss_batch_size"] = (kwargs["labels"][..., 1:] != -100).sum().item()
         else:
-            res["loss_batch_size"] = (targets.view(-1) != -100).sum().item()
-        # print(
-        #     "loss_batch_size is",
-        #     res["loss_batch_size"].item(),
-        #     "shape is ",
-        #     targets.shape,
-        # )
-        # print("vocab", len(self.tokenizer.get_vocab()))
+            res["loss_batch_size"] = (kwargs["labels"].view(-1) != -100).sum().item()
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
         return res
