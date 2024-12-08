@@ -8,7 +8,6 @@ from cyy_torch_toolbox import (
     ModelType,
     TextDatasetCollection,
     Transform,
-    default_data_extraction,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
     replace_str,
@@ -134,12 +133,10 @@ def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
             case {"data": data, "index": index}:
                 data.pop("id", None)
                 return {"index": index, "input": data}
-        raise RuntimeError(data)
-    return default_data_extraction(data)
+    return data
 
 
 def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
-    dc.clear_pipelines()
     dc.append_named_transform(
         Transform(
             fun=functools.partial(
@@ -160,8 +157,10 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
             ),
         )
     if isinstance(dc, TextDatasetCollection):
-        for t in dc.get_text_pipeline().transforms:
-            dc.append_named_transform(t)
+        text_pipeline = dc.get_text_pipeline()
+        if text_pipeline is not None:
+            for t in text_pipeline.transforms:
+                dc.append_named_transform(t)
 
 
 def get_label_to_text_mapping(dataset_name: str) -> dict | None:
