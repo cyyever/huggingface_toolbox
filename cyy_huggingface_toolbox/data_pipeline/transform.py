@@ -8,6 +8,7 @@ from cyy_torch_toolbox import (
     ModelType,
     TextDatasetCollection,
     Transform,
+    BatchTransform,
 )
 from cyy_torch_toolbox.data_pipeline.common import (
     replace_str,
@@ -78,31 +79,28 @@ def apply_tokenizer_transforms(
             )
         )
         dc.append_named_transform(
-            Transform(
+            BatchTransform(
                 fun=functools.partial(
                     transformers.DataCollatorForTokenClassification(
                         tokenizer=model_evaluator.tokenizer.tokenizer
                     )
                 ),
-                for_batch=True,
             )
         )
         return
     dc.append_named_transform(
-        Transform(
+        BatchTransform(
             fun=functools.partial(
                 model_evaluator.tokenizer,
                 nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
                 **tokenizer_kwargs,
             ),
             component="input",
-            for_batch=True,
         )
     )
     if model_evaluator.model_type == ModelType.CausalLM:
         dc.append_named_transform(
-            Transform(
-                for_batch=True,
+            BatchTransform(
                 name="DataCollatorForLanguageModeling",
                 fun=functools.partial(
                     transformers.DataCollatorForLanguageModeling(
@@ -116,8 +114,7 @@ def apply_tokenizer_transforms(
         return
     tokenizer_kwargs.pop("truncation")
     dc.append_named_transform(
-        Transform(
-            for_batch=True,
+        BatchTransform(
             fun=functools.partial(
                 transformers.DataCollatorWithPadding(
                     tokenizer=model_evaluator.tokenizer.tokenizer, **tokenizer_kwargs
