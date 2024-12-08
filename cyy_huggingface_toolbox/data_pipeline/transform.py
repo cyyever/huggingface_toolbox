@@ -103,6 +103,7 @@ def apply_tokenizer_transforms(
         dc.append_named_transform(
             Transform(
                 for_batch=True,
+                name="DataCollatorForLanguageModeling",
                 fun=functools.partial(
                     transformers.DataCollatorForLanguageModeling(
                         tokenizer=model_evaluator.tokenizer.tokenizer,
