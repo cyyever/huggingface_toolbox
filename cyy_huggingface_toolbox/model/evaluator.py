@@ -24,6 +24,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         new_inputs = []
         batch_size: int = kwargs["batch_size"]
         if isinstance(inputs, transformers.BatchEncoding):
+            assert inputs.is_fast
             for i in range(batch_size):
                 new_inputs.append(inputs.sequence_ids(i))
             return {"inputs": new_inputs, "batch_dim": batch_dim}
