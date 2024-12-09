@@ -30,7 +30,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
                 for k, v in inputs.items():
                     assert isinstance(v, torch.Tensor)
                     assert v.shape[0] == batch_size
-                    sample[k] = v[i]
+                    sample[k] = v[i].unsqueeze(0)
                 new_inputs.append(sample)
             return {"inputs": new_inputs, "batch_dim": batch_dim}
         return {"inputs": inputs, "batch_dim": batch_dim}
