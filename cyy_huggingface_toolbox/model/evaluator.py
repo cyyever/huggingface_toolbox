@@ -83,7 +83,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         output = self.model(**model_input)
         return self._compute_loss(**model_input, **output)
 
-    def _compute_loss(self, **kwargs: Any) -> dict:
+    def _compute_loss(self, comput_batch_size: bool = True, **kwargs: Any) -> dict:
         assert kwargs.pop("reduce_loss", True)
         if "pooled_logits" not in kwargs:
             kwargs["pooled_logits"] = kwargs["logits"]
@@ -93,12 +93,17 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "loss": loss,
             "is_averaged_loss": True,
         }
-        if self.model_type == ModelType.CausalLM:
-            res["loss_batch_size"] = (kwargs["labels"][..., 1:] != -100).sum().item()
-        else:
-            res["loss_batch_size"] = (kwargs["labels"].view(-1) != -100).sum().item()
-        if "logits" in kwargs:
-            res["logits"] = kwargs["logits"]
+        if comput_batch_size:
+            if self.model_type == ModelType.CausalLM:
+                res["loss_batch_size"] = (
+                    (kwargs["labels"][..., 1:] != -100).sum().item()
+                )
+            else:
+                res["loss_batch_size"] = (
+                    (kwargs["labels"].view(-1) != -100).sum().item()
+                )
+            if "logits" in kwargs:
+                res["logits"] = kwargs["logits"]
         return res
 
     def _choose_loss_function_type(self) -> None | type:
