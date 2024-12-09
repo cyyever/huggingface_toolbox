@@ -4,7 +4,7 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_torch_toolbox import ModelEvaluator, ModelType
+from cyy_torch_toolbox import EvaluationMode, ModelEvaluator, ModelType
 from transformers.loss.loss_utils import LOSS_MAPPING
 
 from ..tokenizer import HuggingFaceTokenizer
@@ -81,9 +81,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
-        return self._compute_loss(**model_input, **output)
+        return self._compute_loss(
+            **model_input, **output, evaluation_mode=kwargs["evaluation_mode"]
+        )
 
-    def _compute_loss(self, comput_batch_size: bool = True, **kwargs: Any) -> dict:
+    def _compute_loss(self, **kwargs: Any) -> dict:
         assert kwargs.pop("reduce_loss", True)
         if "pooled_logits" not in kwargs:
             kwargs["pooled_logits"] = kwargs["logits"]
@@ -93,7 +95,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "loss": loss,
             "is_averaged_loss": True,
         }
-        if comput_batch_size:
+
+        if kwargs["evaluation_mode"] != EvaluationMode.Test:
             if self.model_type == ModelType.CausalLM:
                 res["loss_batch_size"] = (
                     (kwargs["labels"][..., 1:] != -100).sum().item()
@@ -102,8 +105,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
                 res["loss_batch_size"] = (
                     (kwargs["labels"].view(-1) != -100).sum().item()
                 )
-            if "logits" in kwargs:
-                res["logits"] = kwargs["logits"]
+        if "logits" in kwargs:
+            res["logits"] = kwargs["logits"]
         return res
 
     def _choose_loss_function_type(self) -> None | type:
