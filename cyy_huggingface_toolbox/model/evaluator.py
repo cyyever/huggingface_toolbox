@@ -96,7 +96,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             "is_averaged_loss": True,
         }
 
-        if kwargs["evaluation_mode"] != EvaluationMode.Test:
+        if self.record_batch_size:
             if self.model_type == ModelType.CausalLM:
                 res["loss_batch_size"] = (
                     (kwargs["labels"][..., 1:] != -100).sum().item()
