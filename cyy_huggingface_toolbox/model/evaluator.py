@@ -99,11 +99,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         if kwargs["evaluation_mode"] != EvaluationMode.SampleInference:
             if self.model_type == ModelType.CausalLM:
                 res["loss_batch_size"] = (
-                    (kwargs["labels"][..., 1:] != -100).sum().item()
+                    (kwargs["labels"][..., 1:] != -100).sum().detach()
                 )
             else:
                 res["loss_batch_size"] = (
-                    (kwargs["labels"].view(-1) != -100).sum().item()
+                    (kwargs["labels"].view(-1) != -100).sum().detach()
                 )
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
