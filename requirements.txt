@@ -1,5 +1,0 @@
-huggingface-hub
-transformers
-datasets
-peft == 0.14.0
-git+https://github.com/cyyever/torch_toolbox.git@main
