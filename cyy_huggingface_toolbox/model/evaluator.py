@@ -15,9 +15,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         super().__init__(model=model, **kwargs)
         self.tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
-    @property
-    def model(self) -> transformers.PreTrainedModel:
-        return super().model
+    # @property
+    # def model(self) -> transformers.PreTrainedModel:
+    #     return super().model
 
     def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict:
         batch_dim = 0

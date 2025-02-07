@@ -11,10 +11,13 @@ from datasets import load_dataset as load_hugging_face_dataset
 
 class HunggingFaceFactory(DatasetFactory):
     def get(
-        self, key: str, case_sensitive: bool = True, cache_dir: str | None = None
+        self, key: Any, case_sensitive: bool = True, default: Any = None, **kwargs: Any
     ) -> Any:
         assert case_sensitive
+        assert default is None
+        cache_dir = kwargs.pop("cache_dir", None)
         assert cache_dir is not None
+
         if not self.__has_dataset(key, cache_dir):
             return None
 
