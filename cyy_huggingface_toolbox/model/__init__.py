@@ -17,6 +17,8 @@ from .evaluator import HuggingFaceModelEvaluator
 from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
 
+__all__ = ["HuggingFaceModelEvaluatorForFinetune", "HuggingFaceModelEvaluator"]
+
 
 def __get_model_evaluator(
     model: Any, **kwargs: Any
@@ -38,8 +40,11 @@ for dataset_type in (DatasetType.Text, DatasetType.CodeText):
 
 
 class HuggingFaceModelFactory(Factory):
-    def get(self, key: str, case_sensitive: bool = True) -> dict | None:
+    def get(
+        self, key: str, case_sensitive: bool = True, default: Any = None
+    ) -> dict | None:
         assert case_sensitive
+        assert default is None
         model_name = key
         res = get_huggingface_constructor(model_name)
         if res is None:
