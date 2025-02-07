@@ -15,10 +15,6 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         super().__init__(model=model, **kwargs)
         self.tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
-    # @property
-    # def model(self) -> transformers.PreTrainedModel:
-    #     return super().model
-
     def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict:
         batch_dim = 0
         new_inputs = []
@@ -58,7 +54,6 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         self,
         inputs: dict,
         targets: Any,
-        *args: Any,
         **kwargs: Any,
     ) -> dict:
         if self.model_type in (ModelType.CausalLM,):
@@ -77,6 +72,16 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
 
     def get_feature_forward_fun(self) -> str:
         return "_forward_model"
+
+    def generate(self, *args: Any, **kwargs: Any) -> list[str]:
+        model_input = self._create_input(*args, **kwargs)
+        generated_ids = self.model.generate(
+            **model_input, **kwargs.pop("generate_kwargs", {})
+        )
+        generated_texts = self.tokenizer.tokenizer.batch_decode(
+            generated_ids, skip_special_tokens=True
+        )
+        return generated_texts
 
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
         model_input = self._create_input(*args, **kwargs)
