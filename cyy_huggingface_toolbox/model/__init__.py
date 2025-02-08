@@ -17,7 +17,7 @@ from .evaluator import HuggingFaceModelEvaluator
 from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
 
-__all__ = ["HuggingFaceModelEvaluatorForFinetune", "HuggingFaceModelEvaluator"]
+__all__ = ["HuggingFaceModelEvaluator", "HuggingFaceModelEvaluatorForFinetune"]
 
 
 def __get_model_evaluator(

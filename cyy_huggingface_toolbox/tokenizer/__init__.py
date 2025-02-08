@@ -5,7 +5,6 @@ from typing import Any
 import torch
 import transformers
 from cyy_torch_toolbox import TokenIDsType, TokenIDType, Tokenizer
-from transformers import PreTrainedTokenizerFast
 
 
 class HuggingFaceTokenizer(Tokenizer):

@@ -8,6 +8,6 @@ from .tokenizer import HuggingFaceTokenizer
 
 __all__ = [
     "HuggingFaceModelEvaluator",
-    "HuggingFaceTokenizer",
     "HuggingFaceModelEvaluatorForFinetune",
+    "HuggingFaceTokenizer",
 ]

@@ -15,22 +15,16 @@ classifiers = [
   "Programming Language :: Python"
 ]
 
-
 dependencies = [
-"huggingface-hub",
-"transformers",
-"datasets",
-"peft == 0.14.0",
-"cyy_torch_toolbox@git+https://github.com/cyyever/torch_toolbox.git@main",
+  "huggingface-hub",
+  "transformers",
+  "datasets",
+  "peft == 0.14.0",
+  "cyy_torch_toolbox@git+https://github.com/cyyever/torch_toolbox.git@main",
 ]
-
-
 
 [project.urls]
 Repository = "https://github.com/cyyever/huggingface_toolbox"
-
-[tool.pyright]
-include = ["cyy_huggingface_toolbox"]
 
 [tool.ruff]
 target-version = "py312"
@@ -39,18 +33,24 @@ src = ["cyy_huggingface_toolbox"]
 
 [tool.ruff.lint]
 select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
+  # pylint
+  "PL",
+  # numpy
+  "NPY",
+  # ruff
+  "RUF",
 ]
 
-ignore = ["F401","E501","F403"]
+ignore = ["F403"]
