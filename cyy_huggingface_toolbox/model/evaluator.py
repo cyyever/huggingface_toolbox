@@ -76,11 +76,20 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def generate(self, *args: Any, **kwargs: Any) -> list[str]:
         model_input = self._create_input(*args, **kwargs)
         generated_ids = self.model.generate(
-            **model_input, **kwargs.pop("generate_kwargs", {})
+            **model_input,
+            **kwargs.pop("generate_kwargs", {}),
+            pad_token_id=self.tokenizer.tokenizer.eos_token_id,
         )
-        generated_texts = self.tokenizer.tokenizer.batch_decode(
-            generated_ids, skip_special_tokens=True
-        )
+        generated_texts = []
+        for sample_input_ids, sample_generated_ids in zip(
+            model_input["input_ids"], generated_ids
+        ):
+            generated_texts.append(
+                self.tokenizer.tokenizer.decode(
+                    sample_generated_ids[len(sample_input_ids)],
+                    skip_special_tokens=True,
+                )
+            )
         return generated_texts
 
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
