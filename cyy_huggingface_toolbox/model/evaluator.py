@@ -82,7 +82,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         )
         generated_texts = []
         for sample_input_ids, sample_generated_ids in zip(
-            model_input["input_ids"], generated_ids
+            model_input["input_ids"], generated_ids, strict=False
         ):
             generated_texts.append(
                 self.tokenizer.tokenizer.decode(
