@@ -20,7 +20,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         super().__init__(**kwargs)
         assert self.model_type == ModelType.CausalLM
         peft_config = LoraConfig(
-            target_modules=kwargs.pop("finetune_modules"),
+            target_modules=kwargs["finetune_modules"],
             task_type=TaskType.CAUSAL_LM,
         )
         self.set_model(get_peft_model(model=self.model, peft_config=peft_config))

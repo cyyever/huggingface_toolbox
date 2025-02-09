@@ -77,7 +77,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         model_input = self._create_input(*args, **kwargs)
         generated_ids = self.model.generate(
             **model_input,
-            **kwargs.pop("generate_kwargs", {}),
+            **kwargs.get("generate_kwargs", {}),
             pad_token_id=self.tokenizer.tokenizer.eos_token_id,
         )
         generated_texts = []
@@ -93,7 +93,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         return generated_texts
 
     def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
-        if kwargs.pop("generate", None) is not None:
+        if "generate" in kwargs:
             return {"output": self.generate(*args, **kwargs)}
         model_input = self._create_input(*args, **kwargs)
         output = self.model(**model_input)
