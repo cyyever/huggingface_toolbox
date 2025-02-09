@@ -2,7 +2,7 @@ import copy
 from typing import Any
 
 import torch.nn
-from cyy_torch_toolbox import ModelType, TensorDict
+from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
 from peft.tuners.lora.config import LoraConfig
@@ -23,7 +23,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             target_modules=kwargs["finetune_modules"],
             task_type=TaskType.CAUSAL_LM,
         )
-        self.set_model(get_peft_model(model=self.model, peft_config=peft_config))
+        self.set_model(get_pet_model(model=self.model, peft_config=peft_config))
 
     @property
     def peft_model(self) -> PeftModel:
@@ -49,6 +49,9 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         #     return list(res.values())[0]
 
     def load_perf_model_state_dict(self, state_dict: TensorDict) -> None:
+        for p in self.model.parameters():
+            tensor_to(state_dict, device=p.device)
+            break
         set_peft_model_state_dict(
             model=self.peft_model, peft_model_state_dict=state_dict
         )
