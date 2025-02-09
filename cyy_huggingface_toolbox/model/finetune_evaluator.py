@@ -23,7 +23,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             target_modules=kwargs["finetune_modules"],
             task_type=TaskType.CAUSAL_LM,
         )
-        self.set_model(get_pet_model(model=self.model, peft_config=peft_config))
+        self.set_model(get_peft_model(model=self.model, peft_config=peft_config))
 
     @property
     def peft_model(self) -> PeftModel:
