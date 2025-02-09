@@ -24,8 +24,7 @@ def __get_model_evaluator(
     model: Any, **kwargs: Any
 ) -> HuggingFaceModelEvaluator | ModelEvaluator | None:
     if isinstance(model, transformers.PreTrainedModel):
-        if "need_finetune" in kwargs:
-            kwargs.pop("need_finetune")
+        if "finetune_modules" in kwargs:
             return HuggingFaceModelEvaluatorForFinetune(model=model, **kwargs)
         log_warning("Not finetune")
         return HuggingFaceModelEvaluator(model=model, **kwargs)
