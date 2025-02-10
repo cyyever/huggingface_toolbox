@@ -77,7 +77,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         model_input = self._create_input(*args, **kwargs)
         generated_ids = self.model.generate(
             **model_input,
-            **kwargs.get("generate_kwargs", {}),
+            **(kwargs["generate_kwargs"]),
             pad_token_id=self.tokenizer.tokenizer.eos_token_id,
         )
         generated_texts = []
