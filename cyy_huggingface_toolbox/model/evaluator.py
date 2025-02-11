@@ -13,7 +13,14 @@ from ..tokenizer import HuggingFaceTokenizer
 class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model, **kwargs: Any) -> None:
         super().__init__(model=model, **kwargs)
-        self.tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
+        self.__tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
+
+    @property
+    def tokenizer(self) -> HuggingFaceTokenizer:
+        return self.__tokenizer
+
+    def set_tokenizer(self, tokenizer: HuggingFaceTokenizer) -> None:
+        self.__tokenizer = tokenizer
 
     def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict:
         batch_dim = 0
