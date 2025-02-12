@@ -19,7 +19,7 @@ dependencies = [
   "huggingface-hub",
   "transformers",
   "datasets",
-  "peft == 0.14.0",
+  "peft",
   "cyy_torch_toolbox@git+https://github.com/cyyever/torch_toolbox.git@main",
 ]
 
