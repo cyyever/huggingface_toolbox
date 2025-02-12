@@ -1,4 +1,5 @@
 import functools
+import os
 from typing import Any
 
 import transformers
@@ -175,4 +176,5 @@ def add_text_transforms(
     dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator
 ) -> None:
     add_text_extraction(dc=dc, model_evaluator=model_evaluator)
-    apply_tokenizer_transforms(dc=dc, model_evaluator=model_evaluator)
+    if os.getenv("NO_TOKENIZER_TRANSFORMS") is None:
+        apply_tokenizer_transforms(dc=dc, model_evaluator=model_evaluator)
