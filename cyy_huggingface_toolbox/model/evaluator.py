@@ -19,6 +19,10 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def tokenizer(self) -> HuggingFaceTokenizer:
         return self.__tokenizer
 
+    def save_pretrained(self, output_dir: str) -> None:
+        self.tokenizer.tokenizer.save_pretrained(output_dir)
+        self.model.save_pretrained(output_dir)
+
     def set_tokenizer(self, tokenizer: HuggingFaceTokenizer) -> None:
         self.__tokenizer = tokenizer
 
