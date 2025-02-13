@@ -25,6 +25,8 @@ def __create_huggingface_model(
     **model_kwargs,
 ) -> Callable:
     model_kwargs = copy.deepcopy(model_kwargs)
+    model_kwargs["device_map"] = "auto"
+    model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained or "finetune_modules" in model_kwargs:
@@ -45,13 +47,9 @@ def __create_huggingface_model(
         if bnb_config is not None:
             model_kwargs["quantization_config"] = bnb_config
             model_kwargs["torch_dtype"] = torch.bfloat16
-        return transformers_module.from_pretrained(
-            model_name, **model_kwargs, device_map="cpu"
-        )
+        return transformers_module.from_pretrained(model_name, **model_kwargs)
     log_warning("use huggingface without pretrained parameters")
-    config = transformers.AutoConfig.from_pretrained(
-        model_name, **model_kwargs, device_map="cpu"
-    )
+    config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
     model = transformers_module.from_config(config)
     return model
 
