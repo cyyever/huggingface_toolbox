@@ -25,7 +25,7 @@ def __create_huggingface_model(
     **model_kwargs,
 ) -> Callable:
     model_kwargs = copy.deepcopy(model_kwargs)
-    model_kwargs["device_map"] = "auto"
+    model_kwargs["device_map"] = "cpu"
     model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
