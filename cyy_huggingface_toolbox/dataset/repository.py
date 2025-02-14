@@ -18,13 +18,15 @@ class HunggingFaceFactory(DatasetFactory):
         cache_dir = kwargs.pop("cache_dir", None)
         assert cache_dir is not None
 
-        if not self.__has_dataset(key, cache_dir):
+        if not self.__has_dataset(key, cache_dir, kwargs["dataset_kwargs"]):
             return None
 
         return functools.partial(self.__get_dataset, path=key, cache_dir=cache_dir)
 
     @classmethod
-    def __get_dataset(cls, path: str, cache_dir: str, split: Any, **kwargs) -> Any:
+    def __get_dataset(
+        cls, path: str, cache_dir: str, split: Any, name: Any | None = None, **kwargs
+    ) -> Any:
         if "train" in split:
             split = Split.TRAIN
         elif "val" in split:
@@ -49,12 +51,14 @@ class HunggingFaceFactory(DatasetFactory):
             kwargs["data_files"] = data_files
         try:
             dataset = load_hugging_face_dataset(
-                path=path, cache_dir=cache_dir, **kwargs
+                path=path,
+                cache_dir=cache_dir,
+                name=name,
             )
             if load_local_file:
                 dataset = dataset["train"]
         except BaseException as e:
-            if cls.__has_dataset(key=path, cache_dir=cache_dir):
+            if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
                 return None
             raise e
         if not os.path.isfile(cls.__dataset_cache_file(cache_dir, split)):
@@ -64,15 +68,15 @@ class HunggingFaceFactory(DatasetFactory):
         return dataset
 
     @classmethod
-    def __has_dataset(cls, key: Any, cache_dir: str) -> bool:
+    def __has_dataset(cls, key: Any, cache_dir: str, dataset_kwargs: dict) -> bool:
         if key.startswith("hugging_face_"):
             return True
         if os.path.exists(cls.__dataset_cache_dir(cache_dir)):
             return True
         try:
-            load_dataset_builder(path=key)
+            load_dataset_builder(path=key, name=dataset_kwargs.get("name"))
             return True
-        except BaseException:
+        except BaseException as e:
             pass
         return False
 
