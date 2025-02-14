@@ -1,4 +1,3 @@
-import copy
 from typing import Any
 
 import torch.nn
@@ -11,6 +10,7 @@ from peft.utils.save_and_load import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
 )
+from transformers import PreTrainedModel
 
 from .evaluator import HuggingFaceModelEvaluator
 
@@ -23,7 +23,9 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             target_modules=kwargs["finetune_modules"],
             task_type=TaskType.CAUSAL_LM,
         )
-        self.set_model(get_peft_model(model=self.model, peft_config=peft_config))
+        model = self.model
+        assert isinstance(model, PreTrainedModel)
+        self.set_model(get_peft_model(model=model, peft_config=peft_config))
 
     @property
     def peft_model(self) -> PeftModel:
@@ -35,30 +37,11 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
     def get_perf_model_state_dict(cls, model: torch.nn.Module) -> TensorDict:
         assert isinstance(model, PeftModel)
         return get_peft_model_state_dict(model)
-        # with TempDir() as dir_path:
-        #     model.save_pretrained(dir_path)
-        #     pool = TorchProcessPool()
-        #     pool.submit(
-        #         lambda dir_path: get_peft_model_state_dict(
-        #             AutoPeftModelForCausalLM.from_pretrained(dir_path)
-        #         ),
-        #         dir_path,
-        #     )
-        #     res, _ = pool.wait_results()
-        #     assert len(res) == 1
-        #     return list(res.values())[0]
 
-    def load_perf_model_state_dict(self, state_dict: TensorDict) -> None:
-        for p in self.model.parameters():
-            tensor_to(state_dict, device=p.device)
-            break
+    def load_perf_model_state_dict(
+        self, state_dict: TensorDict, device: torch.device
+    ) -> None:
+        state_dict = tensor_to(state_dict, device=device)
         set_peft_model_state_dict(
             model=self.peft_model, peft_model_state_dict=state_dict
-        )
-
-    def load_model_for_inference(self, model: torch.nn.Module) -> None:
-        if self.model is model:
-            self.set_model(copy.copy(model))
-        self.load_perf_model_state_dict(
-            HuggingFaceModelEvaluatorForFinetune.get_perf_model_state_dict(model)
         )
