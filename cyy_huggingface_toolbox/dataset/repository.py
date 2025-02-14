@@ -54,6 +54,7 @@ class HunggingFaceFactory(DatasetFactory):
                 path=path,
                 cache_dir=cache_dir,
                 name=name,
+                **kwargs,
             )
             if load_local_file:
                 dataset = dataset["train"]
