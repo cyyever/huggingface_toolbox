@@ -77,7 +77,7 @@ class HunggingFaceFactory(DatasetFactory):
         try:
             load_dataset_builder(path=key, name=dataset_kwargs.get("name"))
             return True
-        except BaseException as e:
+        except BaseException:
             pass
         return False
 
