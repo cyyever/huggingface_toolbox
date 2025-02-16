@@ -42,6 +42,10 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         self, state_dict: TensorDict, device: torch.device
     ) -> None:
         state_dict = tensor_to(state_dict, device=device)
-        set_peft_model_state_dict(
-            model=self.peft_model, peft_model_state_dict=state_dict
+        missing_keys, unexpected_keys = set_peft_model_state_dict(
+            model=self.peft_model,
+            peft_model_state_dict=state_dict,
+            ignore_mismatched_sizes=False,
         )
+        assert not missing_keys
+        assert not unexpected_keys
