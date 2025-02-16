@@ -52,6 +52,7 @@ def __create_huggingface_model(
         model = transformers_module.from_pretrained(model_name, **model_kwargs)
         if bnb_config is not None:
             return prepare_model_for_kbit_training(model)
+        return model
 
     log_warning("use huggingface without pretrained parameters")
     config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
