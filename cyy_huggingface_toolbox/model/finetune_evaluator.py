@@ -48,3 +48,8 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             ignore_mismatched_sizes=False,
         )
         assert not unexpected_keys
+
+    def to_device(self, device: torch.device, non_blocking: bool = True) -> None:
+        self.model_util.to_device(device=device, non_blocking=non_blocking)
+        perf_model_state_dict = self.get_perf_model_state_dict(self.peft_model)
+        self.load_perf_model_state_dict(state_dict=perf_model_state_dict, device=device)
