@@ -9,7 +9,6 @@ import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
 from peft import prepare_model_for_kbit_training
-from transformers import BitsAndBytesConfig
 
 
 def __get_cache_dir() -> str:
@@ -31,6 +30,8 @@ def __create_huggingface_model(
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained or "finetune_modules" in model_kwargs:
+        from transformers import BitsAndBytesConfig
+
         assert pretrained
         bnb_config: BitsAndBytesConfig | None = None
         if "load_in_4bit" in model_kwargs:
