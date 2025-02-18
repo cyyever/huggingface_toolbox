@@ -3,12 +3,12 @@ import functools
 import os
 from collections.abc import Callable
 from typing import Any
-
 import torch
+from transformers import BitsAndBytesConfig
 import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
-from peft import prepare_model_for_kbit_training
+from peft.utils.other import prepare_model_for_kbit_training
 
 
 def __get_cache_dir() -> str:
@@ -25,13 +25,12 @@ def __create_huggingface_model(
     **model_kwargs,
 ) -> Callable:
     model_kwargs = copy.deepcopy(model_kwargs)
-    model_kwargs["device_map"] = "cpu"
+    if "device_map" not in model_kwargs:
+        model_kwargs["device_map"] = "cpu"
     model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained or "finetune_modules" in model_kwargs:
-        from transformers import BitsAndBytesConfig
-
         assert pretrained
         bnb_config: BitsAndBytesConfig | None = None
         if "load_in_4bit" in model_kwargs:
