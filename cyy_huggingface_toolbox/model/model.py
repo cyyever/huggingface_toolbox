@@ -32,6 +32,7 @@ def __create_huggingface_model(
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
     if pretrained or "finetune_modules" in model_kwargs:
+        model_kwargs.pop("finetune_modules",None)
         bnb_config: BitsAndBytesConfig | None = None
         if "load_in_4bit" in model_kwargs:
             model_kwargs.pop("load_in_4bit")
