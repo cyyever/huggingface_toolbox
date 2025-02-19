@@ -3,12 +3,13 @@ import functools
 import os
 from collections.abc import Callable
 from typing import Any
+
 import torch
-from transformers import BitsAndBytesConfig
 import transformers
 from cyy_naive_lib.log import log_warning
 from cyy_torch_toolbox import ModelType
 from peft.utils.other import prepare_model_for_kbit_training
+from transformers import BitsAndBytesConfig
 
 
 def __get_cache_dir() -> str:
