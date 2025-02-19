@@ -69,7 +69,7 @@ class HuggingFaceModelFactory(Factory):
         **kwargs: Any,
     ) -> dict:
         final_model_kwargs: dict = copy.deepcopy(kwargs)
-        final_model_kwargs["name"] = real_name
+        final_model_kwargs.pop("name", None)
         tokenizer_kwargs = {}
         if dataset_collection is not None:
             tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
