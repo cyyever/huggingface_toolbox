@@ -75,7 +75,7 @@ class HuggingFaceModelFactory(Factory):
             tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
         tokenizer_kwargs["name"] = real_name
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
-        log_info("tokenizer is %s", tokenizer)
+        log_info("tokenizer is %s", tokenizer.tokenizer)
 
         if tokenizer is not None and hasattr(tokenizer, "itos"):
             token_num = len(tokenizer.get_vocab())
