@@ -67,13 +67,14 @@ class HuggingFaceModelFactory(Factory):
         dataset_collection: DatasetCollection | None = None,
         **kwargs: Any,
     ) -> dict:
-        final_model_kwargs: dict = kwargs
+        final_model_kwargs: dict = copy.deepcopy(kwargs)
+        final_model_kwargs["name"] = real_name
         tokenizer_kwargs = {}
         if dataset_collection is not None:
             tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
         tokenizer_kwargs["name"] = real_name
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
-        log_debug("tokenizer is %s", tokenizer)
+        log_info("tokenizer is %s", tokenizer)
 
         if tokenizer is not None and hasattr(tokenizer, "itos"):
             token_num = len(tokenizer.get_vocab())
