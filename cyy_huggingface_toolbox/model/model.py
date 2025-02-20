@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_naive_lib.log import log_warning
+from cyy_naive_lib.log import log_info, log_warning
 from cyy_torch_toolbox import ModelType
 from peft.utils.other import prepare_model_for_kbit_training
 from transformers import BitsAndBytesConfig
@@ -31,7 +31,8 @@ def __create_huggingface_model(
     model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
-    use_gradient_checkpointing = model_kwargs.get("use_gradient_checkpointing", False)
+    log_info("use model_kwargs", model_kwargs)
+    use_gradient_checkpointing = model_kwargs.pop("use_gradient_checkpointing", False)
     if pretrained or "finetune_modules" in model_kwargs:
         model_kwargs.pop("finetune_modules", None)
         bnb_config: BitsAndBytesConfig | None = None
