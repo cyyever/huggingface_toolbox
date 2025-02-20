@@ -31,7 +31,7 @@ def __create_huggingface_model(
     model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
-    log_info("use model_kwargs", model_kwargs)
+    log_info("use model_kwargs %s", model_kwargs)
     use_gradient_checkpointing = model_kwargs.pop("use_gradient_checkpointing", False)
     if pretrained or "finetune_modules" in model_kwargs:
         model_kwargs.pop("finetune_modules", None)
