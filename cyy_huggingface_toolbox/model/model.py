@@ -31,6 +31,7 @@ def __create_huggingface_model(
     model_kwargs["trust_remote_code"] = True
     if "cache_dir" not in model_kwargs:
         model_kwargs["cache_dir"] = __get_cache_dir()
+    use_gradient_checkpointing = model_kwargs.get("use_gradient_checkpointing", False)
     if pretrained or "finetune_modules" in model_kwargs:
         model_kwargs.pop("finetune_modules", None)
         bnb_config: BitsAndBytesConfig | None = None
@@ -52,7 +53,9 @@ def __create_huggingface_model(
             model_kwargs["torch_dtype"] = torch.bfloat16
         model = transformers_module.from_pretrained(model_name, **model_kwargs)
         if bnb_config is not None:
-            return prepare_model_for_kbit_training(model)
+            return prepare_model_for_kbit_training(
+                model, use_gradient_checkpointing=use_gradient_checkpointing
+            )
         return model
 
     log_warning("use huggingface without pretrained parameters")
