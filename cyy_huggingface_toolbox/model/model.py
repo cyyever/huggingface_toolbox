@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_naive_lib.log import log_info, log_warning
+from cyy_naive_lib.log import log_error, log_warning
 from cyy_torch_toolbox import ModelType
 from peft.utils.other import prepare_model_for_kbit_training
 from transformers import BitsAndBytesConfig
@@ -25,44 +25,54 @@ def __create_huggingface_model(
     pretrained: bool,
     **model_kwargs,
 ) -> Callable:
-    model_kwargs = copy.deepcopy(model_kwargs)
-    if "device_map" not in model_kwargs:
-        model_kwargs["device_map"] = "cpu"
-    model_kwargs["trust_remote_code"] = True
-    if "cache_dir" not in model_kwargs:
-        model_kwargs["cache_dir"] = __get_cache_dir()
-    log_info("use model_kwargs %s", model_kwargs)
-    use_gradient_checkpointing = model_kwargs.pop("use_gradient_checkpointing", False)
-    if pretrained or "finetune_modules" in model_kwargs:
-        model_kwargs.pop("finetune_modules", None)
-        bnb_config: BitsAndBytesConfig | None = None
-        if "load_in_4bit" in model_kwargs:
-            model_kwargs.pop("load_in_4bit")
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.bfloat16,
-                bnb_4bit_use_double_quant=False,
-                bnb_4bit_quant_type="nf4",
-            )
-        elif "load_in_8bit" in model_kwargs:
-            model_kwargs.pop("load_in_8bit")
-            bnb_config = BitsAndBytesConfig(
-                load_in_8bit=True,
-            )
-        if bnb_config is not None:
-            model_kwargs["quantization_config"] = bnb_config
-            model_kwargs["torch_dtype"] = torch.bfloat16
-        model = transformers_module.from_pretrained(model_name, **model_kwargs)
-        if bnb_config is not None:
-            return prepare_model_for_kbit_training(
-                model, use_gradient_checkpointing=use_gradient_checkpointing
-            )
-        return model
+    try:
+        model_kwargs = copy.deepcopy(model_kwargs)
+        if "device_map" not in model_kwargs:
+            model_kwargs["device_map"] = "cpu"
+        model_kwargs["trust_remote_code"] = True
+        if "cache_dir" not in model_kwargs:
+            model_kwargs["cache_dir"] = __get_cache_dir()
+        use_gradient_checkpointing = model_kwargs.pop(
+            "use_gradient_checkpointing", False
+        )
+        if pretrained or "finetune_modules" in model_kwargs:
+            model_kwargs.pop("finetune_modules", None)
+            model_kwargs.pop("finetune_config", None)
+            bnb_config: BitsAndBytesConfig | None = None
+            if "load_in_4bit" in model_kwargs:
+                model_kwargs.pop("load_in_4bit")
+                bnb_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.bfloat16,
+                    bnb_4bit_use_double_quant=False,
+                    bnb_4bit_quant_type="nf4",
+                )
+            elif "load_in_8bit" in model_kwargs:
+                model_kwargs.pop("load_in_8bit")
+                bnb_config = BitsAndBytesConfig(
+                    load_in_8bit=True,
+                )
+            if bnb_config is not None:
+                model_kwargs["quantization_config"] = bnb_config
+                model_kwargs["torch_dtype"] = torch.bfloat16
+            model = transformers_module.from_pretrained(model_name, **model_kwargs)
+            if bnb_config is not None:
+                return prepare_model_for_kbit_training(
+                    model, use_gradient_checkpointing=use_gradient_checkpointing
+                )
+            return model
 
-    log_warning("use huggingface without pretrained parameters")
-    config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
-    model = transformers_module.from_config(config)
-    return model
+        log_warning("use huggingface without pretrained parameters")
+        config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
+        model = transformers_module.from_config(config)
+        return model
+    except BaseException as e:
+        log_error(
+            "Failed to create huggingface model, that shouldn't happen. model_kwargs is %s, exception is %s",
+            model_kwargs,
+            e,
+        )
+        raise e
 
 
 def get_huggingface_constructor(
