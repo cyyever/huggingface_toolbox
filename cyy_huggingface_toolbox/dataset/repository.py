@@ -58,6 +58,7 @@ class HunggingFaceFactory(DatasetFactory):
             )
             if load_local_file:
                 dataset = dataset["train"]
+            dataset.data_files = kwargs["data_files"]
         except BaseException as e:
             if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
                 return None
