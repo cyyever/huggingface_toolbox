@@ -1,7 +1,7 @@
 from typing import Any
 
 import torch.nn
-from cyy_naive_lib.log import log_warning
+from cyy_naive_lib.log import log_warning, log_info
 from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
@@ -21,9 +21,18 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         super().__init__(**kwargs)
         assert self.model_type == ModelType.CausalLM
         log_warning("Finetune modules %s", kwargs["finetune_modules"])
-        peft_config = LoraConfig(
+        finetune_config = kwargs.get("finetune_config", {})
+        if finetune_config:
+            log_info("Use finetune config %s", finetune_config)
+        else:
+            log_info("Use default finetune config %s", finetune_config)
+        config_type: type = LoraConfig
+        assert "type" not in finetune_config
+
+        peft_config = config_type(
             target_modules=kwargs["finetune_modules"],
             task_type=TaskType.CAUSAL_LM,
+            **finetune_config,
         )
         model = self.model
         assert isinstance(model, PreTrainedModel)
