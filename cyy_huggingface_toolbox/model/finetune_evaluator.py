@@ -1,7 +1,7 @@
 from typing import Any
 
 import torch.nn
-from cyy_naive_lib.log import log_warning, log_info
+from cyy_naive_lib.log import log_info, log_warning
 from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
