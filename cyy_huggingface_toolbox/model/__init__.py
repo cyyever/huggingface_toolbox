@@ -77,11 +77,6 @@ class HuggingFaceModelFactory(Factory):
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
         log_info("tokenizer is %s", type(tokenizer.tokenizer))
 
-        if tokenizer is not None:
-            token_num = len(tokenizer.get_vocab())
-            for k in ("num_embeddings", "token_num"):
-                if k not in kwargs:
-                    final_model_kwargs[k] = token_num
         model = create_model(constructor, **final_model_kwargs)
 
         return {"model": model, "tokenizer": tokenizer, "model_type": model_type}
