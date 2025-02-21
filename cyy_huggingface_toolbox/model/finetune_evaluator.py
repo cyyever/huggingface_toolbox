@@ -34,6 +34,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
             task_type=TaskType.CAUSAL_LM,
             **finetune_config,
         )
+        log_info("Use peft config %s", peft_config)
         model = self.model
         assert isinstance(model, PreTrainedModel)
         self.set_model(get_peft_model(model=model, peft_config=peft_config))
