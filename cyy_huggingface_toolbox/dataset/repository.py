@@ -34,6 +34,8 @@ class HunggingFaceFactory(DatasetFactory):
         elif "test" in split:
             split = Split.TEST
         kwargs["split"] = split
+        kwargs["name"] = name
+        kwargs["cache_dir"] = cache_dir
         file_key = f"{str(split).lower()}_files"
         if kwargs.get(file_key):
             kwargs = copy.deepcopy(kwargs)
@@ -47,11 +49,10 @@ class HunggingFaceFactory(DatasetFactory):
                     kwargs.pop(k)
             kwargs["split"] = Split.TRAIN
             kwargs["data_files"] = data_files
+            kwargs["cache_dir"] = None
         try:
             dataset = load_hugging_face_dataset(
                 path=path,
-                cache_dir=cache_dir,
-                name=name,
                 **kwargs,
             )
             if "data_files" in kwargs:
