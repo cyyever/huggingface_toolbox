@@ -45,6 +45,7 @@ class HunggingFaceFactory(DatasetFactory):
             for k in list(kwargs.keys()):
                 if "_files" in k:
                     kwargs.pop(k)
+            kwargs["split"] = Split.TRAIN
             kwargs["data_files"] = data_files
         try:
             dataset = load_hugging_face_dataset(
