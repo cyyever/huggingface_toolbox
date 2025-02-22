@@ -35,9 +35,7 @@ class HunggingFaceFactory(DatasetFactory):
             split = Split.TEST
         kwargs["split"] = split
         file_key = f"{str(split).lower()}_files"
-        load_local_file = False
         if kwargs.get(file_key):
-            load_local_file = True
             kwargs = copy.deepcopy(kwargs)
             data_files = kwargs.pop(file_key)
             assert data_files
@@ -47,7 +45,6 @@ class HunggingFaceFactory(DatasetFactory):
             for k in list(kwargs.keys()):
                 if "_files" in k:
                     kwargs.pop(k)
-            kwargs.pop("split")
             kwargs["data_files"] = data_files
         try:
             dataset = load_hugging_face_dataset(
@@ -56,9 +53,7 @@ class HunggingFaceFactory(DatasetFactory):
                 name=name,
                 **kwargs,
             )
-            if load_local_file:
-                dataset = dataset["train"]
-            dataset.data_files = kwargs["data_files"]
+            setattr(dataset, file_key, kwargs["data_files"])
         except BaseException as e:
             if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
                 return None
