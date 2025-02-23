@@ -18,7 +18,7 @@ class HuggingFaceTokenizer(Tokenizer):
         )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.tokenizer.padding_side = "left"
+        # # # self.tokenizer.padding_side = "left"
 
         assert self.tokenizer.is_fast
 
