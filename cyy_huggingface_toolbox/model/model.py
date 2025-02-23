@@ -1,6 +1,5 @@
 import copy
 import functools
-import os
 from collections.abc import Callable
 from typing import Any
 
@@ -10,13 +9,6 @@ from cyy_naive_lib.log import log_error, log_warning
 from cyy_torch_toolbox import ModelType
 from peft.utils.other import prepare_model_for_kbit_training
 from transformers import BitsAndBytesConfig
-
-
-def __get_cache_dir() -> str:
-    cache_dir = os.getenv("PYTORCH_MODEL_CACHE_ROOT_DIR")
-    if cache_dir is None:
-        return os.path.join(os.path.expanduser("~"), "huggingface_models")
-    return cache_dir
 
 
 def __create_huggingface_model(
@@ -30,8 +22,6 @@ def __create_huggingface_model(
         if "device_map" not in model_kwargs:
             model_kwargs["device_map"] = "cpu"
         model_kwargs["trust_remote_code"] = True
-        if "cache_dir" not in model_kwargs:
-            model_kwargs["cache_dir"] = __get_cache_dir()
         use_gradient_checkpointing = model_kwargs.pop(
             "use_gradient_checkpointing", False
         )
