@@ -157,7 +157,7 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
             ),
         )
     if isinstance(dc, TextDatasetCollection):
-        text_pipeline = dc.get_text_pipeline()
+        text_pipeline = dc.get_text_pipeline(model_evaluator.tokenizer.tokenizer)
         if text_pipeline is not None:
             for t in text_pipeline.transforms:
                 dc.append_named_transform(t)
