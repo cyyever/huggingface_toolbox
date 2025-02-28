@@ -21,6 +21,7 @@ dependencies = [
   "datasets",
   "bitsandbytes",
   "peft",
+  "trl",
   "cyy_torch_toolbox@git+https://github.com/cyyever/torch_toolbox.git@main",
 ]
 
