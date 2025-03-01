@@ -58,8 +58,8 @@ class HuggingFaceTokenizer(Tokenizer):
     def get_vocab(self) -> Mapping[str, int]:
         return self.tokenizer.get_vocab()
 
-    def get_mask_token(self) -> str | list[str] | None:
-        return self.tokenizer.mask_token
+    def get_mask_token(self) -> str:
+        raise NotImplementedError()
 
     def tokenize(self, phrase: str) -> transformers.BatchEncoding:
         return self.tokenizer(phrase, return_tensors="pt", truncation=False)
