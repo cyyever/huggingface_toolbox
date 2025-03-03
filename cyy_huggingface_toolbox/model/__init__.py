@@ -5,9 +5,14 @@ from typing import Any
 
 import transformers
 from cyy_naive_lib.log import log_info, log_warning
-from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory, ModelType
-from cyy_torch_toolbox.model import (
+from cyy_torch_toolbox import (
+    DatasetCollection,
+    DatasetType,
+    Factory,
     ModelEvaluator,
+    ModelType,
+)
+from cyy_torch_toolbox.model import (
     create_model,
     global_model_evaluator_factory,
     global_model_factory,
