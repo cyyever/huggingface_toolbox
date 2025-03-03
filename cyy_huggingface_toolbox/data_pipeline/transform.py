@@ -67,7 +67,6 @@ def apply_tokenizer_transforms(
     tokenizer_kwargs = {
         "padding": True,
         "max_length": input_max_len,
-        "truncation": True,
         "return_tensors": "pt",
     }
     if model_evaluator.model_type == ModelType.TokenClassification:
@@ -94,6 +93,7 @@ def apply_tokenizer_transforms(
             fun=functools.partial(
                 model_evaluator.tokenizer,
                 nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
+                truncation=True,
                 **tokenizer_kwargs,
             ),
             component="input",
@@ -114,7 +114,6 @@ def apply_tokenizer_transforms(
             )
         )
         return
-    tokenizer_kwargs.pop("truncation")
     dc.append_named_transform(
         BatchTransform(
             fun=functools.partial(

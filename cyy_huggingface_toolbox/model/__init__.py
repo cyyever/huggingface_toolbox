@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 import transformers
-from cyy_naive_lib.log import log_debug, log_info, log_warning
+from cyy_naive_lib.log import log_info, log_warning
 from cyy_torch_toolbox import DatasetCollection, DatasetType, Factory, ModelType
 from cyy_torch_toolbox.model import (
     ModelEvaluator,
