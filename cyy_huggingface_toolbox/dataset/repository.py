@@ -80,9 +80,6 @@ class HunggingFaceFactory(DatasetFactory):
             pass
         return False
 
-    def get_similar_keys(self, key: str) -> list[str]:
-        return []
-
     @classmethod
     def __dataset_cache_dir(cls, cache_dir: str) -> str:
         return os.path.join(cache_dir, ".cache", "hg_cache")
