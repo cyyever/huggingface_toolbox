@@ -19,6 +19,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def tokenizer(self) -> HuggingFaceTokenizer:
         return self.__tokenizer
 
+    @property
+    def model(self) -> transformers.PreTrainedModel:
+        m = super().model
+        assert isinstance(m, transformers.PreTrainedModel)
+        return m
+
     def save_pretrained(self, output_dir: str) -> None:
         self.tokenizer.tokenizer.save_pretrained(output_dir)
         self.model.save_pretrained(output_dir)
@@ -113,6 +119,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         )
 
     def _compute_loss(self, **kwargs: Any) -> dict:
+        ignore_index: int = -100
         assert kwargs.pop("reduce_loss", True)
         if "pooled_logits" not in kwargs:
             kwargs["pooled_logits"] = kwargs["logits"]
@@ -126,11 +133,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         if kwargs["evaluation_mode"] != EvaluationMode.SampleInference:
             if self.model_type == ModelType.CausalLM:
                 res["loss_batch_size"] = (
-                    (kwargs["labels"][..., 1:] != -100).sum().detach()
+                    (kwargs["labels"][..., 1:] != ignore_index).sum().detach()
                 )
             else:
                 res["loss_batch_size"] = (
-                    (kwargs["labels"].view(-1) != -100).sum().detach()
+                    (kwargs["labels"].view(-1) != ignore_index).sum().detach()
                 )
         if "logits" in kwargs:
             res["logits"] = kwargs["logits"]
