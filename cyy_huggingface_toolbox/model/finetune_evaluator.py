@@ -25,7 +25,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         if finetune_config:
             log_info("Use finetune config %s", finetune_config)
         else:
-            log_info("Use default finetune config %s", finetune_config)
+            log_debug("Use default finetune config")
         config_type: type = LoraConfig
         assert "type" not in finetune_config
 
