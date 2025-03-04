@@ -1,7 +1,7 @@
 from typing import Any
 
 import torch.nn
-from cyy_naive_lib.log import log_info, log_warning
+from cyy_naive_lib.log import log_debug, log_info
 from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
 from peft.mapping import get_peft_model
 from peft.peft_model import PeftModel
@@ -20,7 +20,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         assert self.model_type == ModelType.CausalLM
-        log_warning("Finetune modules %s", kwargs["finetune_modules"])
+        log_info("Finetune modules %s", kwargs["finetune_modules"])
         finetune_config = kwargs.get("finetune_config", {})
         if finetune_config:
             log_info("Use finetune config %s", finetune_config)
