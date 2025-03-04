@@ -19,12 +19,6 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def tokenizer(self) -> HuggingFaceTokenizer:
         return self.__tokenizer
 
-    @property
-    def model(self) -> transformers.PreTrainedModel:
-        m = super().model
-        assert isinstance(m, transformers.PreTrainedModel)
-        return m
-
     def save_pretrained(self, output_dir: str) -> None:
         self.tokenizer.tokenizer.save_pretrained(output_dir)
         self.model.save_pretrained(output_dir)
