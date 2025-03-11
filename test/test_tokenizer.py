@@ -24,6 +24,6 @@ def test_hugging_face_tokenizer() -> None:
     config.dc_config.dataset_kwargs["input_max_len"] = 300
     trainer = config.create_trainer()
     assert isinstance(trainer.model_evaluator, HuggingFaceModelEvaluator)
-    tokenizer = trainer.model_evaluator.tokenizer
+    tokenizer = trainer.model_evaluator.tokenizer_mixin
     assert isinstance(tokenizer, HuggingFaceTokenizer)
     tokenizer_testcases(tokenizer=tokenizer)
