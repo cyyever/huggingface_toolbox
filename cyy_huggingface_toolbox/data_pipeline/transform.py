@@ -73,7 +73,7 @@ def apply_tokenizer_transforms(
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
-                    tokenize_and_align_labels, model_evaluator.tokenizer.tokenizer
+                    tokenize_and_align_labels, model_evaluator.tokenizer
                 ),
                 cacheable=True,
             )
@@ -82,7 +82,7 @@ def apply_tokenizer_transforms(
             BatchTransform(
                 fun=functools.partial(
                     transformers.DataCollatorForTokenClassification(
-                        tokenizer=model_evaluator.tokenizer.tokenizer
+                        tokenizer=model_evaluator.tokenizer
                     )
                 ),
             )
@@ -105,7 +105,7 @@ def apply_tokenizer_transforms(
                 name="DataCollatorForLanguageModeling",
                 fun=functools.partial(
                     transformers.DataCollatorForLanguageModeling(
-                        tokenizer=model_evaluator.tokenizer.tokenizer,
+                        tokenizer=model_evaluator.tokenizer,
                         return_tensors="pt",
                         mlm=False,
                     )
@@ -118,7 +118,7 @@ def apply_tokenizer_transforms(
         BatchTransform(
             fun=functools.partial(
                 transformers.DataCollatorWithPadding(
-                    tokenizer=model_evaluator.tokenizer.tokenizer, **tokenizer_kwargs
+                    tokenizer=model_evaluator.tokenizer, **tokenizer_kwargs
                 )
             ),
             component="input",
@@ -156,7 +156,7 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
             ),
         )
     if isinstance(dc, TextDatasetCollection):
-        text_pipeline = dc.get_text_pipeline(model_evaluator.tokenizer.tokenizer)
+        text_pipeline = dc.get_text_pipeline(model_evaluator.tokenizer)
         if text_pipeline is not None:
             for t in text_pipeline.transforms:
                 dc.append_named_transform(t)

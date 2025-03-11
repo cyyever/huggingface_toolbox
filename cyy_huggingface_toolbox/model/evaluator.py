@@ -16,11 +16,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         self.__tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
     @property
-    def tokenizer(self) -> HuggingFaceTokenizer:
-        return self.__tokenizer
+    def tokenizer(self)-> transformers.PreTrainedTokenizerFast:
+        return self.__tokenizer.tokenizer
 
     def save_pretrained(self, output_dir: str) -> None:
-        self.tokenizer.tokenizer.save_pretrained(output_dir)
+        self.tokenizer.save_pretrained(output_dir)
         self.model.save_pretrained(output_dir)
 
     def set_tokenizer(self, tokenizer: HuggingFaceTokenizer) -> None:
@@ -89,14 +89,14 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         generated_ids = self.model.generate(
             **model_input,
             **(kwargs["generate_kwargs"]),
-            pad_token_id=self.tokenizer.tokenizer.eos_token_id,
+            pad_token_id=self.tokenizer.eos_token_id,
         )
         generated_texts = []
         for sample_input_ids, sample_generated_ids in zip(
             model_input["input_ids"], generated_ids, strict=False
         ):
             generated_texts.append(
-                self.tokenizer.tokenizer.decode(
+                self.tokenizer.decode(
                     sample_generated_ids[sample_input_ids.shape[0] :],
                     skip_special_tokens=True,
                 )
