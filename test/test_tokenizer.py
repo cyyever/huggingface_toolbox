@@ -6,7 +6,7 @@ from cyy_torch_toolbox import Config, Executor
 os.environ["USE_THREAD_DATALOADER"] = "1"
 
 
-def tokenizer_testcases(executor: Executor, tokenizer: HuggingFaceTokenizer) -> None:
+def tokenizer_testcases(tokenizer: HuggingFaceTokenizer) -> None:
     phrase = "hello world!"
     tokens = tokenizer.get_tokens_from_transformed_result(phrase)
     assert tokens == ["[CLS]", "hello", "world", "!", "[SEP]"]
@@ -26,4 +26,4 @@ def test_hugging_face_tokenizer() -> None:
     assert isinstance(trainer.model_evaluator, HuggingFaceModelEvaluator)
     tokenizer = trainer.model_evaluator.tokenizer
     assert isinstance(tokenizer, HuggingFaceTokenizer)
-    tokenizer_testcases(executor=trainer, tokenizer=tokenizer)
+    tokenizer_testcases(tokenizer=tokenizer)
