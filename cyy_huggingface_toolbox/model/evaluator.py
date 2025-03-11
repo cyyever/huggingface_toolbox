@@ -16,7 +16,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         self.__tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
     @property
-    def tokenizer(self)-> transformers.PreTrainedTokenizerFast:
+    def tokenizer_mixin(self) -> HuggingFaceTokenizer:
+        return self.__tokenizer
+
+    @property
+    def tokenizer(self) -> transformers.PreTrainedTokenizerFast:
         return self.__tokenizer.tokenizer
 
     def save_pretrained(self, output_dir: str) -> None:
