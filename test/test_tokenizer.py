@@ -1,23 +1,19 @@
 import os
 
 from cyy_huggingface_toolbox import HuggingFaceModelEvaluator, HuggingFaceTokenizer
-from cyy_torch_toolbox import Config, Executor, Tokenizer
-from cyy_torch_toolbox.tokenizer import convert_phrase_to_token_ids
+from cyy_torch_toolbox import Config, Executor
 
 os.environ["USE_THREAD_DATALOADER"] = "1"
 
 
-def tokenizer_testcases(executor: Executor, tokenizer: Tokenizer) -> None:
+def tokenizer_testcases(executor: Executor, tokenizer: HuggingFaceTokenizer) -> None:
     phrase = "hello world!"
-    tokens = tokenizer.get_tokens_from_transformed_result(
-        tokenizer.tokenize(phrase=phrase)
-    )
+    tokens = tokenizer.get_tokens_from_transformed_result(phrase)
     assert tokens == ["[CLS]", "hello", "world", "!", "[SEP]"]
     for token in tokens:
         token_id = tokenizer.get_token_id(token)
         recovered_token = tokenizer.get_token(token_id)
         assert recovered_token == token
-    convert_phrase_to_token_ids(executor=executor, phrase=phrase)
 
 
 def test_hugging_face_tokenizer() -> None:
