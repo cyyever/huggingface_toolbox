@@ -78,4 +78,6 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         return self.underlying_model.loss_function
 
     def set_loss_fun(self, loss_fun: Callable | str) -> None:
-        self.underlying_model.loss_function = loss_fun
+        model = self.model
+        assert isinstance(model, PreTrainedModel)
+        model.loss_function = loss_fun

@@ -22,6 +22,7 @@ def __create_huggingface_model(
         if "device_map" not in model_kwargs:
             model_kwargs["device_map"] = "cpu"
         model_kwargs["trust_remote_code"] = True
+        model_kwargs.pop("loss_fun_name", None)
         use_gradient_checkpointing = model_kwargs.pop(
             "use_gradient_checkpointing", False
         )
