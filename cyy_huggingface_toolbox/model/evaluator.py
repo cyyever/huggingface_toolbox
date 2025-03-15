@@ -119,9 +119,12 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _compute_loss(self, **kwargs: Any) -> dict:
         ignore_index: int = -100
         assert kwargs.pop("reduce_loss", True)
-        if "pooled_logits" not in kwargs:
-            kwargs["pooled_logits"] = kwargs["logits"]
-        loss = self.loss_fun(**kwargs)
+        loss = kwargs.pop("loss", None)
+        # HF computes loss in model forward
+        if loss is None:
+            if "pooled_logits" not in kwargs:
+                kwargs["pooled_logits"] = kwargs["logits"]
+            loss = self.loss_fun(**kwargs)
 
         res = {
             "loss": loss,
