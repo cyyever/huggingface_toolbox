@@ -13,8 +13,8 @@ from peft.utils.save_and_load import (
     set_peft_model_state_dict,
 )
 from transformers import PreTrainedModel
-from ..loss import focal_loss
 
+from ..loss import focal_loss
 from .evaluator import HuggingFaceModelEvaluator
 
 

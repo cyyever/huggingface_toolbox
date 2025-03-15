@@ -1,16 +1,15 @@
 from typing import Any
+
 import torch.nn
-import torch.nn.functional as F
 
 
 # Copyied from torchvision
 def sigmoid_focal_loss(
     inputs: torch.Tensor,
     targets: torch.Tensor,
-    alpha: float = 0.25,
+    reduction: str,
     gamma: float = 2,
     ignore_index: int = -100,
-    reduction: str = "none",
 ) -> torch.Tensor:
     """
     Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
@@ -21,8 +20,6 @@ def sigmoid_focal_loss(
         targets (Tensor): A float tensor with the same shape as inputs. Stores the binary
                 classification label for each element in inputs
                 (0 for the negative class and 1 for the positive class).
-        alpha (float): Weighting factor in range (0,1) to balance
-                positive vs negative examples or -1 for ignore. Default: ``0.25``.
         gamma (float): Exponent of the modulating factor (1 - p_t) to
                 balance easy vs hard examples. Default: ``2``.
         reduction (string): ``'none'`` | ``'mean'`` | ``'sum'``
@@ -34,25 +31,27 @@ def sigmoid_focal_loss(
     """
     # Original implementation from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/focal_loss.py
 
-    # inputs=
-    p = torch.sigmoid(inputs)
-    ce_loss = torch.nn.functional.cross_entropy(
-        inputs, targets, reduction="none", ignore_index=ignore_index
-    )
-    p_t = p * targets + (1 - p) * (1 - targets)
-    loss = ce_loss * ((1 - p_t) ** gamma)
-
-    if alpha >= 0:
-        alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
-        loss = alpha_t * loss
-    assert loss.shape[0] == targets.shape[0]
     mask = targets != ignore_index
-    loss = loss[mask]
+    inputs = inputs[mask]
+    print("before", targets.shape)
+    targets = targets[mask]
+    print("after", targets.shape)
+    ce_loss = torch.nn.functional.cross_entropy(
+        inputs,
+        targets,
+        ignore_index=ignore_index,
+        reduction="none",
+    )
+    p = torch.softmax(inputs, dim=1)
+    print("p[0] is", p[0], torch.sum(p[0]))
+    p_t = p[:, targets]
+    # print("p_t is", p_t)
+    print("ce_loss is", ce_loss[0])
+    loss = ce_loss * ((1 - p_t) ** gamma)
+    print("loss is", loss[0])
+    assert loss.shape[0] == targets.shape[0]
 
-    # Check reduction option and return loss accordingly
-    if reduction == "none":
-        pass
-    elif reduction == "mean":
+    if reduction == "mean":
         loss = loss.mean()
     elif reduction == "sum":
         loss = loss.sum()
@@ -88,8 +87,8 @@ def focal_loss(
     loss = sigmoid_focal_loss(
         inputs=logits,
         targets=shift_labels,
-        ignore_index=ignore_index,
         reduction=reduction,
+        ignore_index=ignore_index,
     )
     if reduction == "sum":
         loss = loss / num_items_in_batch
