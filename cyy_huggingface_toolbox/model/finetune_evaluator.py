@@ -1,3 +1,4 @@
+import functools
 from collections.abc import Callable
 from typing import Any
 
@@ -84,6 +85,9 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         match loss_fun:
             case "focal_loss":
                 assert "ForCausalLMLoss" in str(model.loss_function)
-                model.loss_function = focal_loss
+                assert "loss_fun_kwargs" in self._model_kwargs
+                model.loss_function = functools.partial(
+                    focal_loss, self._model_kwargs["loss_fun_kwargs"]["gamma"]
+                )
             case _:
                 raise NotImplementedError()

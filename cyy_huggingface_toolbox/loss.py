@@ -66,12 +66,12 @@ def sigmoid_focal_loss(
 
 # copied from HuggingFace ForCausalLMLoss
 def focal_loss(
+    gamma: float,
     logits,
     labels,
     vocab_size: int,
     num_items_in_batch: int | None = None,
     ignore_index: int = -100,
-    gamma: float = 2,
     **kwargs: Any,
 ) -> torch.Tensor:
     # Upcast to float if we need to compute the loss to avoid potential precision issues
