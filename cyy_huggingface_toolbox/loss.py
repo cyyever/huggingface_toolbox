@@ -22,20 +22,20 @@ def sigmoid_focal_loss(
                 (0 for the negative class and 1 for the positive class).
         gamma (float): Exponent of the modulating factor (1 - p_t) to
                 balance easy vs hard examples. Default: ``2``.
-        reduction (string): ``'none'`` | ``'mean'`` | ``'sum'``
-                ``'none'``: No reduction will be applied to the output.
+        reduction (string): ``'mean'`` | ``'sum'``
                 ``'mean'``: The output will be averaged.
-                ``'sum'``: The output will be summed. Default: ``'none'``.
+                ``'sum'``: The output will be summed.
     Returns:
         Loss tensor with the reduction option applied.
     """
     # Original implementation from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/focal_loss.py
 
-    mask = targets != ignore_index
+    cpu_targets = targets
+    targets = targets.to(inputs.device)
+    mask = cpu_targets != ignore_index
     inputs = inputs[mask]
-    print("before", targets.shape)
     targets = targets[mask]
-    print("after", targets.shape)
+    cpu_targets = cpu_targets[mask]
     ce_loss = torch.nn.functional.cross_entropy(
         inputs,
         targets,
@@ -43,12 +43,14 @@ def sigmoid_focal_loss(
         reduction="none",
     )
     p = torch.softmax(inputs, dim=1)
-    print("p[0] is", p[0], torch.sum(p[0]))
-    p_t = p[:, targets]
-    # print("p_t is", p_t)
-    print("ce_loss is", ce_loss[0])
+    assert p.shape == inputs.shape
+    assert len(p.shape) == 2
+    mask2 = torch.zeros_like(p, dtype=torch.bool)
+    for idx, target in enumerate(cpu_targets):
+        mask2[idx][target] = True
+    p_t = torch.masked_select(p, mask2).flatten()
+    assert p_t.shape == ce_loss.shape
     loss = ce_loss * ((1 - p_t) ** gamma)
-    print("loss is", loss[0])
     assert loss.shape[0] == targets.shape[0]
 
     if reduction == "mean":
@@ -57,7 +59,7 @@ def sigmoid_focal_loss(
         loss = loss.sum()
     else:
         raise ValueError(
-            f"Invalid Value for arg 'reduction': '{reduction} \n Supported reduction modes: 'none', 'mean', 'sum'"
+            f"Invalid Value for arg 'reduction': '{reduction} \n Supported reduction modes: 'mean', 'sum'"
         )
     return loss
 
@@ -73,7 +75,6 @@ def focal_loss(
 ) -> torch.Tensor:
     # Upcast to float if we need to compute the loss to avoid potential precision issues
     logits = logits.float()
-    labels = labels.to(logits.device)
     # Shift so that tokens < n predict n
     labels = torch.nn.functional.pad(labels, (0, 1), value=ignore_index)
     shift_labels = labels[..., 1:].contiguous()
@@ -82,7 +83,6 @@ def focal_loss(
     logits = logits.view(-1, vocab_size)
     shift_labels = shift_labels.view(-1)
     # Enable model parallelism
-    shift_labels = shift_labels.to(logits.device)
     reduction = "sum" if num_items_in_batch is not None else "mean"
     loss = sigmoid_focal_loss(
         inputs=logits,
