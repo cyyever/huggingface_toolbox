@@ -1,5 +1,5 @@
 import cyy_huggingface_toolbox  # noqa: F401
-from cyy_torch_toolbox import create_dataset_collection, ClassificationDatasetCollection
+from cyy_torch_toolbox import ClassificationDatasetCollection, create_dataset_collection
 
 
 def test_dataset() -> None:

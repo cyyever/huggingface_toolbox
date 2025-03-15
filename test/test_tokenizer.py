@@ -1,7 +1,7 @@
 import os
 
 from cyy_huggingface_toolbox import HuggingFaceModelEvaluator, HuggingFaceTokenizer
-from cyy_torch_toolbox import Config, Executor
+from cyy_torch_toolbox import Config
 
 os.environ["USE_THREAD_DATALOADER"] = "1"
 
