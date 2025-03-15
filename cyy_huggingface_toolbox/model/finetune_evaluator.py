@@ -45,6 +45,12 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         assert isinstance(_model, PeftModel)
         return _model
 
+    @property
+    def underlying_model(self) -> PreTrainedModel:
+        _model = self.peft_model.base_model.model
+        assert isinstance(_model, PreTrainedModel)
+        return _model
+
     @classmethod
     def get_perf_model_state_dict(cls, model: torch.nn.Module) -> TensorDict:
         assert isinstance(model, PeftModel)
