@@ -31,7 +31,7 @@ def sigmoid_focal_loss(
     # Original implementation from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/focal_loss.py
 
     cpu_targets = targets
-    targets = targets.to(inputs.device)
+    targets = targets.to(inputs.device, non_blocking=True)
     mask = cpu_targets != ignore_index
     inputs = inputs[mask]
     targets = targets[mask]
