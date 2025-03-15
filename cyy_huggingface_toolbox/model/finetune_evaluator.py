@@ -13,6 +13,7 @@ from peft.utils.save_and_load import (
     set_peft_model_state_dict,
 )
 from transformers import PreTrainedModel
+from ..loss import focal_loss
 
 from .evaluator import HuggingFaceModelEvaluator
 
@@ -80,4 +81,9 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
     def set_loss_fun(self, loss_fun: Callable | str) -> None:
         model = self.model
         assert isinstance(model, PreTrainedModel)
-        model.loss_function = loss_fun
+        match loss_fun:
+            case "focal_loss":
+                assert "ForCausalLMLoss" in str(model.loss_function)
+                model.loss_function = focal_loss
+            case _:
+                raise NotImplementedError()
