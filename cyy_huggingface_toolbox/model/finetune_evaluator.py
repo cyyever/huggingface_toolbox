@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any
 
 import torch.nn
@@ -71,3 +72,10 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         self.model_util.to_device(device=device, non_blocking=non_blocking)
         perf_model_state_dict = self.get_perf_model_state_dict(self.peft_model)
         self.load_perf_model_state_dict(state_dict=perf_model_state_dict, device=device)
+
+    @property
+    def loss_fun(self) -> Callable:
+        return self.underlying_model.loss_function
+
+    def set_loss_fun(self, loss_fun: Callable | str) -> None:
+        self.underlying_model.loss_function = loss_fun
