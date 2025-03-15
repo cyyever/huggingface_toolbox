@@ -8,7 +8,7 @@ def sigmoid_focal_loss(
     inputs: torch.Tensor,
     targets: torch.Tensor,
     reduction: str,
-    gamma: float = 2,
+    gamma: float,
     ignore_index: int = -100,
 ) -> torch.Tensor:
     """
@@ -21,7 +21,7 @@ def sigmoid_focal_loss(
                 classification label for each element in inputs
                 (0 for the negative class and 1 for the positive class).
         gamma (float): Exponent of the modulating factor (1 - p_t) to
-                balance easy vs hard examples. Default: ``2``.
+                balance easy vs hard examples.
         reduction (string): ``'mean'`` | ``'sum'``
                 ``'mean'``: The output will be averaged.
                 ``'sum'``: The output will be summed.
@@ -71,6 +71,7 @@ def focal_loss(
     vocab_size: int,
     num_items_in_batch: int | None = None,
     ignore_index: int = -100,
+    gamma: float = 2,
     **kwargs: Any,
 ) -> torch.Tensor:
     # Upcast to float if we need to compute the loss to avoid potential precision issues
@@ -88,6 +89,7 @@ def focal_loss(
         inputs=logits,
         targets=shift_labels,
         reduction=reduction,
+        gamma=gamma,
         ignore_index=ignore_index,
     )
     if reduction == "sum":
