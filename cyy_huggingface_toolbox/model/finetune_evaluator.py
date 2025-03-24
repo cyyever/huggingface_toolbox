@@ -5,7 +5,7 @@ from typing import Any
 import torch.nn
 from cyy_naive_lib.log import log_debug, log_info
 from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
-from peft.mapping import get_peft_model
+from peft import get_peft_model
 from peft.peft_model import PeftModel
 from peft.tuners.lora.config import LoraConfig
 from peft.utils.peft_types import TaskType
