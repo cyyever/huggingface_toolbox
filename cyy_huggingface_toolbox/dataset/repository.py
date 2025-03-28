@@ -4,7 +4,7 @@ import os
 from typing import Any
 
 import dill
-from cyy_naive_lib.log import log_debug
+from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox.dataset import DatasetFactory
 from datasets import Split, load_dataset_builder
 from datasets import load_dataset as load_hugging_face_dataset
@@ -59,7 +59,7 @@ class HunggingFaceFactory(DatasetFactory):
             if "data_files" in kwargs:
                 setattr(dataset, file_key, kwargs["data_files"])
         except BaseException as e:
-            log_debug("exception is %s", e)
+            log_info("exception is %s", e)
             if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
                 return None
             raise e
@@ -79,7 +79,7 @@ class HunggingFaceFactory(DatasetFactory):
             load_dataset_builder(path=key, name=dataset_kwargs.get("name"))
             return True
         except BaseException as e:
-            log_debug("exception is %s", e)
+            log_info("exception is %s", e)
         return False
 
     @classmethod
