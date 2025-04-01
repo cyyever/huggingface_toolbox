@@ -59,9 +59,10 @@ class HunggingFaceFactory(DatasetFactory):
             if "data_files" in kwargs:
                 setattr(dataset, file_key, kwargs["data_files"])
         except BaseException as e:
-            log_info("exception is %s", e)
             if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
-                return None
+                if file_key not in kwargs:
+                    return None
+            log_info("exception is %s", e)
             raise e
         if not os.path.isfile(cls.__dataset_cache_file(cache_dir, split)):
             os.makedirs(cls.__dataset_cache_dir(cache_dir), exist_ok=True)
