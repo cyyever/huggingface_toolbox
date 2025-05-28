@@ -18,6 +18,21 @@ from cyy_torch_toolbox.data_pipeline.common import (
 from ..model import HuggingFaceModelEvaluator
 
 
+def dict_to_list(data: Any) -> Any:
+    if not isinstance(data, dict):
+        return data
+    if len(data) == 1:
+        return  next(iter(data.values()))
+    result = []
+    for k, v in data.items():
+        if not result:
+            result = [{k: d} for d in v]
+        else:
+            for idx, d in enumerate(v):
+                result[idx][k] = d
+    return result
+
+
 def tokenize_and_align_labels(
     tokenizer: transformers.PreTrainedTokenizerFast, example
 ) -> transformers.BatchEncoding:
@@ -77,6 +92,7 @@ def apply_tokenizer_transforms(
                 cacheable=True,
             )
         )
+        dc.append_named_transform(BatchTransform(fun=dict_to_list))
         dc.append_named_transform(
             BatchTransform(
                 fun=functools.partial(
