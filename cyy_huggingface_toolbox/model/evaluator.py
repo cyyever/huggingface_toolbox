@@ -71,18 +71,20 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         targets: Any,
         **kwargs: Any,
     ) -> dict:
-        if self.model_type in (ModelType.CausalLM,):
-            for v in inputs.values():
-                if isinstance(v, torch.Tensor):
-                    v.squeeze_(dim=0)
-            assert "labels" in inputs
-        if self.model_type in (
-            ModelType.Classification,
-            ModelType.TokenClassification,
-        ):
-            inputs["labels"] = targets
-        else:
-            assert targets is None
+        match self.model_type:
+            case ModelType.CausalLM:
+                for v in inputs.values():
+                    if isinstance(v, torch.Tensor):
+                        v.squeeze_(dim=0)
+                assert "labels" in inputs
+            case ModelType.Classification:
+                inputs["labels"] = targets
+            case ModelType.TokenClassification:
+                assert inputs is None
+                inputs = kwargs
+                inputs["labels"] = targets
+            case _:
+                assert targets is None
         return inputs
 
     def get_feature_forward_fun(self) -> str:
@@ -107,10 +109,23 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             )
         return generated_texts
 
-    def _forward_model(self, *args: Any, **kwargs: Any) -> dict:
+    def _forward_model(
+        self,
+        *args: Any,
+        device: Any = None,
+        evaluation_mode: Any = None,
+        batch_index: Any = None,
+        batch_size: Any = None,
+        non_blocking: Any = None,
+        phase: Any = None,
+        **kwargs: Any,
+    ) -> dict:
         if "generate" in kwargs:
             return {"output": self.generate(*args, **kwargs)}
         model_input = self._create_input(*args, **kwargs)
+        # model_input.pop("device", None)
+        # model_input.pop("", None)
+        print(model_input.keys())
         output = self.model(**model_input)
         return self._compute_loss(
             **model_input, **output, evaluation_mode=kwargs["evaluation_mode"]
