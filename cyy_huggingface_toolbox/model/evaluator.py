@@ -124,7 +124,6 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             kwargs["input_ids"] = kwargs["input_ids"].to(
                 device=device, non_blocking=non_blocking
             )
-        print(kwargs)
         model_input = self._create_input(**kwargs)
         output = self.model(**model_input)
         return self._compute_loss(
