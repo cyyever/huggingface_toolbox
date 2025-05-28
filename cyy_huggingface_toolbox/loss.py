@@ -93,5 +93,6 @@ def focal_loss(
         ignore_index=ignore_index,
     )
     if reduction == "sum":
+        assert num_items_in_batch is not None
         loss = loss / num_items_in_batch
     return loss
