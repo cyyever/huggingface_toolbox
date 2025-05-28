@@ -67,8 +67,8 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
 
     def _create_input(
         self,
+        *,
         inputs: dict,
-        targets: Any,
         **kwargs: Any,
     ) -> dict:
         match self.model_type:
@@ -78,20 +78,18 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
                         v.squeeze_(dim=0)
                 assert "labels" in inputs
             case ModelType.Classification:
-                inputs["labels"] = targets
+                if "targets" in kwargs:
+                    inputs["labels"] = kwargs["targets"]
             case ModelType.TokenClassification:
                 assert inputs is None
                 inputs = kwargs
-                inputs["labels"] = targets
-            case _:
-                assert targets is None
         return inputs
 
     def get_feature_forward_fun(self) -> str:
         return "_forward_model"
 
-    def generate(self, *args: Any, **kwargs: Any) -> list[str]:
-        model_input = self._create_input(*args, **kwargs)
+    def generate(self, **kwargs: Any) -> list[str]:
+        model_input = self._create_input(**kwargs)
         generated_ids = self.model.generate(
             **model_input,
             **(kwargs["generate_kwargs"]),
@@ -111,24 +109,26 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
 
     def _forward_model(
         self,
-        *args: Any,
-        device: Any = None,
+        *,
+        device: torch.device | None = None,
         evaluation_mode: Any = None,
         batch_index: Any = None,
         batch_size: Any = None,
-        non_blocking: Any = None,
+        non_blocking: bool | None = None,
         phase: Any = None,
         **kwargs: Any,
     ) -> dict:
         if "generate" in kwargs:
-            return {"output": self.generate(*args, **kwargs)}
-        model_input = self._create_input(*args, **kwargs)
-        # model_input.pop("device", None)
-        # model_input.pop("", None)
-        print(model_input.keys())
+            return {"output": self.generate(**kwargs)}
+        if "input_ids" in kwargs:
+            kwargs["input_ids"] = kwargs["input_ids"].to(
+                device=device, non_blocking=non_blocking
+            )
+        print(kwargs)
+        model_input = self._create_input(**kwargs)
         output = self.model(**model_input)
         return self._compute_loss(
-            **model_input, **output, evaluation_mode=kwargs["evaluation_mode"]
+            **model_input, **output, evaluation_mode=evaluation_mode
         )
 
     def _compute_loss(self, **kwargs: Any) -> dict:
