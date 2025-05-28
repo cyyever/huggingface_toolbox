@@ -22,7 +22,7 @@ def dict_to_list(data: Any) -> Any:
     if not isinstance(data, dict):
         return data
     if len(data) == 1:
-        return  next(iter(data.values()))
+        return next(iter(data.values()))
     result = []
     for k, v in data.items():
         if not result:
