@@ -60,7 +60,8 @@ def __create_huggingface_model(
         return model
     except BaseException as e:
         log_error(
-            "Failed to create huggingface model, that shouldn't happen. model_kwargs is %s, exception is %s",
+            "Failed to create huggingface model, that shouldn't happen."
+            " model_kwargs is %s, exception is %s",
             model_kwargs,
             e,
         )

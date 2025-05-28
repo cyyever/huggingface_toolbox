@@ -57,7 +57,7 @@ def apply_tokenizer_transforms(
     dc: DatasetCollection,
     model_evaluator: HuggingFaceModelEvaluator,
 ) -> None:
-    if not isinstance(model_evaluator.tokenizer, HuggingFaceTokenizer):
+    if not isinstance(model_evaluator.tokenizer, transformers.PreTrainedTokenizerBase):
         return
 
     input_max_len: int | None = dc.dataset_kwargs.get("input_max_len", None)
