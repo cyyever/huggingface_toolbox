@@ -16,7 +16,6 @@ from cyy_torch_toolbox.data_pipeline.common import (
 )
 
 from ..model import HuggingFaceModelEvaluator
-from ..tokenizer import HuggingFaceTokenizer
 
 
 def tokenize_and_align_labels(
@@ -82,7 +81,7 @@ def apply_tokenizer_transforms(
             BatchTransform(
                 fun=functools.partial(
                     transformers.DataCollatorForTokenClassification(
-                        tokenizer=model_evaluator.tokenizer
+                        tokenizer=model_evaluator.tokenizer, **tokenizer_kwargs
                     )
                 ),
             )
