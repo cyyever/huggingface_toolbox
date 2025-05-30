@@ -24,6 +24,7 @@ def __create_huggingface_model(
         model_kwargs["trust_remote_code"] = True
         model_kwargs.pop("loss_fun_name", None)
         model_kwargs.pop("loss_fun_kwargs", None)
+        model_kwargs.pop("frozen_modules", None)
         use_gradient_checkpointing = model_kwargs.pop(
             "use_gradient_checkpointing", False
         )
