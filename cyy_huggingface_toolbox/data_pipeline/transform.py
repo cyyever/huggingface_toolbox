@@ -44,8 +44,10 @@ def tokenize_and_align_labels(
         batch_index=0
     )  # Map tokens to their respective word.
     previous_word_idx: None | int = None
-    # log_debug("examples are %s",example)
+    log_info("examples are %s",example)
     label = example.get("ner_tags")
+    if label is None:
+        label = example.get("labels")
     if label is None:
         label = example.get("labels")
     label_ids: list[int] = []
