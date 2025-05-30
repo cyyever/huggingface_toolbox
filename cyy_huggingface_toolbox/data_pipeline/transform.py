@@ -44,14 +44,13 @@ def tokenize_and_align_labels(
         batch_index=0
     )  # Map tokens to their respective word.
     previous_word_idx: None | int = None
-    log_info("examples are %s", example)
+    # log_info("examples are %s", example)
     label = example.get("ner_tags")
     if label is None:
         label = example.get("labels")
     if label is None:
         label = example.get("tags")
     assert label is not None
-    label = label.tolist()
 
     if isinstance(label[0], str):
         label = [labels[a] for a in label]
@@ -62,7 +61,7 @@ def tokenize_and_align_labels(
         elif (
             word_idx != previous_word_idx
         ):  # Only label the first token of a given word.
-            log_info("label is %s word_idx is %s", label, word_idx)
+            # log_info("label is %s word_idx is %s", label, word_idx)
             label_ids.append(label[word_idx])
         else:
             label_ids.append(-100)
@@ -90,18 +89,22 @@ def apply_tokenizer_transforms(
         log_info("use input text max_len %s", input_max_len)
 
     tokenizer_kwargs = {
-        "padding": True,
+        "padding": "max_length",
         "max_length": input_max_len,
         "return_tensors": "pt",
     }
     if model_evaluator.model_type == ModelType.TokenClassification:
-        labels = dc.get_labels()
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
                     tokenize_and_align_labels,
                     model_evaluator.tokenizer,
-                    {label: idx for idx, label in enumerate(sorted(set(labels)))},
+                    {
+                        label: idx
+                        for idx, label in enumerate(
+                            sorted(set(model_evaluator.model.labels))
+                        )
+                    },
                 ),
                 cacheable=True,
             )
