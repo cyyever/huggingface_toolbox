@@ -49,7 +49,7 @@ def tokenize_and_align_labels(
     if label is None:
         label = example.get("labels")
     if label is None:
-        label = example.get("labels")
+        label = example.get("tags")
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
