@@ -1,4 +1,5 @@
 import functools
+import torch
 import os
 from typing import Any
 
@@ -18,6 +19,22 @@ from cyy_torch_toolbox.data_pipeline.common import (
 from ..model import HuggingFaceModelEvaluator
 
 
+def dict_to_tensor(data: Any) -> Any:
+    if not isinstance(data, dict):
+        return data
+    if len(data) == 1:
+        return next(iter(data.values()))
+    for k, v in data.items():
+        log_info("k v %s %s",k,v[0])
+        if not isinstance(v[0],list):
+            log_info("k v %s %s",k,v[0].shape)
+            data[k] = torch.stack(v)
+            log_info("k v %s %s",k,data[k].shape)
+        else:
+            data[k] = torch.tensor(v,dtype=torch.long)
+        # data[k] = torch.concat(v, dim=1)
+    return data
+
 def dict_to_list(data: Any) -> Any:
     if not isinstance(data, dict):
         return data
@@ -30,21 +47,26 @@ def dict_to_list(data: Any) -> Any:
         else:
             for idx, d in enumerate(v):
                 result[idx][k] = d
+    log_info("result 0 is %s", result[0])
+    log_info("result 1 is %s", result[1])
+    log_info("result is %s", result)
     return result
 
 
 def tokenize_and_align_labels(
-    tokenizer: transformers.PreTrainedTokenizerFast, labels, example
+    tokenizer: transformers.PreTrainedTokenizerFast,
+    tokenizer_kwargs,
+    labels,
+    example,
 ) -> transformers.BatchEncoding:
     tokenized_inputs = tokenizer(
-        example["tokens"], padding=False, truncation=False, is_split_into_words=True
+        example["tokens"], is_split_into_words=True, **tokenizer_kwargs
     )
 
     word_ids = tokenized_inputs.word_ids(
         batch_index=0
     )  # Map tokens to their respective word.
     previous_word_idx: None | int = None
-    # log_info("examples are %s", example)
     label = example.get("ner_tags")
     if label is None:
         label = example.get("labels")
@@ -84,21 +106,26 @@ def apply_tokenizer_transforms(
     if not isinstance(model_evaluator.tokenizer, transformers.PreTrainedTokenizerBase):
         return
 
+    tokenizer_kwargs = {
+        "return_tensors": "pt",
+    }
     input_max_len: int | None = dc.dataset_kwargs.get("input_max_len", None)
     if input_max_len is not None:
         log_info("use input text max_len %s", input_max_len)
-
-    tokenizer_kwargs = {
-        "padding": "max_length",
-        "max_length": input_max_len,
-        "return_tensors": "pt",
-    }
+        tokenizer_kwargs |= {
+            "truncation": True,
+            "padding": True,
+            "max_length": input_max_len,
+        }
     if model_evaluator.model_type == ModelType.TokenClassification:
+        assert input_max_len is not None
+        tokenizer_kwargs["padding"] = "max_length"
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
                     tokenize_and_align_labels,
                     model_evaluator.tokenizer,
+                    tokenizer_kwargs,
                     {
                         label: idx
                         for idx, label in enumerate(
@@ -109,16 +136,16 @@ def apply_tokenizer_transforms(
                 cacheable=True,
             )
         )
-        dc.append_named_transform(BatchTransform(fun=dict_to_list))
-        dc.append_named_transform(
-            BatchTransform(
-                fun=functools.partial(
-                    transformers.DataCollatorForTokenClassification(
-                        tokenizer=model_evaluator.tokenizer, **tokenizer_kwargs
-                    )
-                ),
-            )
-        )
+        dc.append_named_transform(BatchTransform(fun=dict_to_tensor))
+        # dc.append_named_transform(
+        #     BatchTransform(
+        #         fun=functools.partial(
+        # transformers.DataCollatorForTokenClassification(
+        #                 tokenizer=model_evaluator.tokenizer, padding=True
+        #             )
+        #         ),
+        #     )
+        # )
         return
     dc.append_named_transform(
         BatchTransform(
