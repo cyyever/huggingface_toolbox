@@ -1,8 +1,8 @@
 import functools
-import torch
 import os
 from typing import Any
 
+import torch
 import transformers
 from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
@@ -25,15 +25,13 @@ def dict_to_tensor(data: Any) -> Any:
     if len(data) == 1:
         return next(iter(data.values()))
     for k, v in data.items():
-        log_info("k v %s %s",k,v[0])
-        if not isinstance(v[0],list):
-            log_info("k v %s %s",k,v[0].shape)
-            data[k] = torch.stack(v)
-            log_info("k v %s %s",k,data[k].shape)
+        # log_info("k v %s %s",k,v[0])
+        if not isinstance(v[0], list):
+            data[k] = torch.concat(v, dim=0)
         else:
-            data[k] = torch.tensor(v,dtype=torch.long)
-        # data[k] = torch.concat(v, dim=1)
+            data[k] = torch.tensor(v, dtype=torch.long)
     return data
+
 
 def dict_to_list(data: Any) -> Any:
     if not isinstance(data, dict):
