@@ -80,7 +80,8 @@ def tokenize_and_align_labels(
         new_sample_labels = []
         for a in sample_labels:
             if a in labels:
-                if a == background_label and phase == MachineLearningPhase:
+                # log_info("tag is %s and background_label %s compare %s phase %s", a,background_label, a==background_label, phase)
+                if a == background_label and phase == MachineLearningPhase.Training:
                     new_sample_labels.append(-100)
                 else:
                     new_sample_labels.append(labels[a])
@@ -165,15 +166,6 @@ def apply_tokenizer_transforms(
             phases=[MachineLearningPhase.Validation, MachineLearningPhase.Test],
         )
         dc.append_named_transform(BatchTransform(fun=dict_to_tensor))
-        # dc.append_named_transform(
-        #     BatchTransform(
-        #         fun=functools.partial(
-        # transformers.DataCollatorForTokenClassification(
-        #                 tokenizer=model_evaluator.tokenizer, padding=True
-        #             )
-        #         ),
-        #     )
-        # )
         return
     dc.append_named_transform(
         BatchTransform(
