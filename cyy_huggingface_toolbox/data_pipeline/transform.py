@@ -8,6 +8,7 @@ from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     BatchTransform,
     DatasetCollection,
+    MachineLearningPhase,
     ModelType,
     TextDatasetCollection,
     Transform,
@@ -53,8 +54,10 @@ def dict_to_list(data: Any) -> Any:
 
 def tokenize_and_align_labels(
     tokenizer: transformers.PreTrainedTokenizerFast,
-    tokenizer_kwargs,
-    labels,
+    tokenizer_kwargs: Any,
+    labels: dict,
+    phase: MachineLearningPhase,
+    background_label: str,
     example,
 ) -> transformers.BatchEncoding:
     tokenized_inputs = tokenizer(
@@ -65,15 +68,26 @@ def tokenize_and_align_labels(
         batch_index=0
     )  # Map tokens to their respective word.
     previous_word_idx: None | int = None
-    label = example.get("ner_tags")
-    if label is None:
-        label = example.get("labels")
-    if label is None:
-        label = example.get("tags")
-    assert label is not None
+    sample_labels = example.get("ner_tags")
+    if sample_labels is None:
+        sample_labels = example.get("labels")
+    if sample_labels is None:
+        sample_labels = example.get("tags")
+    assert sample_labels is not None
+    assert background_label in labels
 
-    if isinstance(label[0], str):
-        label = [labels[a] for a in label]
+    if isinstance(sample_labels[0], str):
+        new_sample_labels = []
+        for a in sample_labels:
+            if a in labels:
+                if a == background_label and phase == MachineLearningPhase:
+                    new_sample_labels.append(-100)
+                else:
+                    new_sample_labels.append(labels[a])
+            else:
+                assert phase != MachineLearningPhase.Training
+                new_sample_labels.append(labels[background_label])
+        sample_labels = new_sample_labels
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
@@ -82,7 +96,7 @@ def tokenize_and_align_labels(
             word_idx != previous_word_idx
         ):  # Only label the first token of a given word.
             # log_info("label is %s word_idx is %s", label, word_idx)
-            label_ids.append(label[word_idx])
+            label_ids.append(sample_labels[word_idx])
         else:
             label_ids.append(-100)
         previous_word_idx = word_idx
@@ -118,21 +132,37 @@ def apply_tokenizer_transforms(
     if model_evaluator.model_type == ModelType.TokenClassification:
         assert input_max_len is not None
         tokenizer_kwargs["padding"] = "max_length"
+        labels = {
+            label: idx
+            for idx, label in enumerate(sorted(set(model_evaluator.model.labels)))
+        }
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
                     tokenize_and_align_labels,
                     model_evaluator.tokenizer,
                     tokenizer_kwargs,
-                    {
-                        label: idx
-                        for idx, label in enumerate(
-                            sorted(set(model_evaluator.model.labels))
-                        )
-                    },
+                    labels,
+                    MachineLearningPhase.Training,
+                    "O",
                 ),
                 cacheable=True,
-            )
+            ),
+            phases=[MachineLearningPhase.Training],
+        )
+        dc.append_named_transform(
+            Transform(
+                fun=functools.partial(
+                    tokenize_and_align_labels,
+                    model_evaluator.tokenizer,
+                    tokenizer_kwargs,
+                    labels,
+                    MachineLearningPhase.Test,
+                    "O",
+                ),
+                cacheable=True,
+            ),
+            phases=[MachineLearningPhase.Validation, MachineLearningPhase.Test],
         )
         dc.append_named_transform(BatchTransform(fun=dict_to_tensor))
         # dc.append_named_transform(
