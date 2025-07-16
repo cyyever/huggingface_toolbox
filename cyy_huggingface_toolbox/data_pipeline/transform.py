@@ -159,7 +159,6 @@ def apply_tokenizer_transforms(
             fun=functools.partial(
                 model_evaluator.tokenizer,
                 nested_batch_encoding=model_evaluator.model_type == ModelType.CausalLM,
-                truncation=True,
                 **tokenizer_kwargs,
             ),
             component="input",
