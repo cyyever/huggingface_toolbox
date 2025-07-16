@@ -4,7 +4,7 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_naive_lib.log import log_info
+from cyy_naive_lib.log import log_debug, log_info
 from cyy_torch_toolbox import (
     BatchTransform,
     DatasetCollection,
@@ -20,36 +20,21 @@ from cyy_torch_toolbox.data_pipeline.common import (
 from ..model import HuggingFaceModelEvaluator
 
 
-def dict_to_tensor(data: Any) -> Any:
+def merge_batch_encodings(data: Any) -> Any:
     if not isinstance(data, dict):
         return data
-    if len(data) == 1:
-        return next(iter(data.values()))
-    for k, v in data.items():
-        # log_info("k v %s %s",k,v[0])
-        if not isinstance(v[0], list):
-            data[k] = torch.concat(v, dim=0)
-        else:
-            data[k] = torch.tensor(v, dtype=torch.long)
-    return data
+    assert len(data) == 1 and "input" in data
+    encodings = data["input"]
+    assert all(isinstance(b, transformers.BatchEncoding) for b in encodings)
 
+    result = {}
+    for k in encodings[0]:
+        result[k] = torch.concat([b[k] for b in encodings], dim=0)
+    result["labels"] = result["labels"].flatten()
+    log_debug("input_ids shape %s", result["input_ids"].shape)
+    log_debug("labels shape %s", result["labels"].shape)
 
-def dict_to_list(data: Any) -> Any:
-    if not isinstance(data, dict):
-        return data
-    if len(data) == 1:
-        return next(iter(data.values()))
-    result = []
-    for k, v in data.items():
-        if not result:
-            result = [{k: d} for d in v]
-        else:
-            for idx, d in enumerate(v):
-                result[idx][k] = d
-    log_info("result 0 is %s", result[0])
-    log_info("result 1 is %s", result[1])
-    log_info("result is %s", result)
-    return result
+    return transformers.BatchEncoding(result)
 
 
 def tokenize_and_align_labels(
@@ -102,7 +87,7 @@ def tokenize_and_align_labels(
             label_ids.append(-100)
         previous_word_idx = word_idx
 
-    tokenized_inputs["labels"] = label_ids
+    tokenized_inputs["labels"] = torch.tensor(label_ids, dtype=torch.long)
     return tokenized_inputs
 
 
@@ -165,7 +150,9 @@ def apply_tokenizer_transforms(
             ),
             phases=[MachineLearningPhase.Validation, MachineLearningPhase.Test],
         )
-        dc.append_named_transform(BatchTransform(fun=dict_to_tensor, cacheable=True))
+        dc.append_named_transform(
+            BatchTransform(fun=merge_batch_encodings, cacheable=True)
+        )
         return
     dc.append_named_transform(
         BatchTransform(
