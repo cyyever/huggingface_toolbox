@@ -165,7 +165,7 @@ def apply_tokenizer_transforms(
             ),
             phases=[MachineLearningPhase.Validation, MachineLearningPhase.Test],
         )
-        dc.append_named_transform(BatchTransform(fun=dict_to_tensor))
+        dc.append_named_transform(BatchTransform(fun=dict_to_tensor, cacheable=True))
         return
     dc.append_named_transform(
         BatchTransform(
