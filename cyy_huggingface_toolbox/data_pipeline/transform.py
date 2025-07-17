@@ -52,6 +52,11 @@ def tokenize_and_align_labels(
     word_ids = tokenized_inputs.word_ids(
         batch_index=0
     )  # Map tokens to their respective word.
+    # new_tokens = tokenized_inputs.tokens(
+    #     batch_index=0
+    # )  # Map tokens to their respective word.
+    # print("word_ids", word_ids)
+    # print("new_tokens ", new_tokens)
     previous_word_idx: None | int = None
     sample_labels = example.get("ner_tags")
     if sample_labels is None:
@@ -65,7 +70,6 @@ def tokenize_and_align_labels(
         new_sample_labels = []
         for a in sample_labels:
             if a in labels:
-                # log_info("tag is %s and background_label %s compare %s phase %s", a,background_label, a==background_label, phase)
                 if a == background_label and phase == MachineLearningPhase.Training:
                     new_sample_labels.append(-100)
                 else:
@@ -86,6 +90,7 @@ def tokenize_and_align_labels(
         else:
             label_ids.append(-100)
         previous_word_idx = word_idx
+    # print("labels are", label_ids)
 
     tokenized_inputs["labels"] = torch.tensor(label_ids, dtype=torch.long)
     return tokenized_inputs
