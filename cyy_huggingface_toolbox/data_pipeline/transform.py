@@ -66,18 +66,18 @@ def tokenize_and_align_labels(
     assert sample_labels is not None
     assert background_label in labels
 
-    if isinstance(sample_labels[0], str):
-        new_sample_labels = []
-        for a in sample_labels:
-            if a in labels:
-                if a == background_label and phase == MachineLearningPhase.Training:
-                    new_sample_labels.append(-100)
-                else:
-                    new_sample_labels.append(labels[a])
+    assert isinstance(sample_labels[0], str)
+    new_sample_labels = []
+    for a in sample_labels:
+        if a in labels:
+            if a == background_label and phase == MachineLearningPhase.Training:
+                new_sample_labels.append(-100)
             else:
-                assert phase != MachineLearningPhase.Training
-                new_sample_labels.append(labels[background_label])
-        sample_labels = new_sample_labels
+                new_sample_labels.append(labels[a])
+        else:
+            assert phase != MachineLearningPhase.Training
+            new_sample_labels.append(labels[background_label])
+    sample_labels = new_sample_labels
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
