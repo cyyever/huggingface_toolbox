@@ -67,7 +67,6 @@ def filter_labels(
             assert phase != MachineLearningPhase.Training
             new_sample_labels.append(labels[background_label])
     example["target"] = new_sample_labels
-    example["labels"] = sample_labels
     return example
 
 
@@ -100,6 +99,7 @@ def tokenize_and_align_labels(
             label_ids.append(-100)
         previous_word_idx = word_idx
 
+    tokenized_inputs["word_ids"] = word_ids
     tokenized_inputs["labels"] = torch.tensor(label_ids, dtype=torch.long)
     return tokenized_inputs
 
