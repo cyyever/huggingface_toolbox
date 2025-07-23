@@ -82,25 +82,25 @@ def tokenize_and_align_labels(
     word_ids = tokenized_inputs.word_ids(
         batch_index=0
     )  # Map tokens to their respective word.
-    previous_word_idx: None | int = None
+    previous_word_id: None | int = None
     sample_labels = example.get("target")
     assert len(example["tokens"]) == len(sample_labels)
     label_ids: list[int] = []
-    for word_idx in word_ids:  # Set the special tokens to -100.
-        if word_idx is None:
+    for word_id in word_ids:  # Set the special tokens to -100.
+        if word_id is None:
             label_ids.append(-100)
-        elif (
-            word_idx != previous_word_idx
-        ):  # Only label the first token of a given word.
-            # if sample_labels[word_idx] != -100:
-            #     print("attention word", example["tokens"][word_idx], example["labels"][word_idx])
-            label_ids.append(sample_labels[word_idx])
+        elif word_id != previous_word_id:  # Only label the first token of a given word.
+            # if sample_labels[word_id] != -100:
+            #     print("attention word", example["tokens"][word_id], example["labels"][word_id])
+            label_ids.append(sample_labels[word_id])
         else:
             label_ids.append(-100)
-        previous_word_idx = word_idx
+        previous_word_id = word_id
 
-    tokenized_inputs["word_ids"] = word_ids
     tokenized_inputs["labels"] = torch.tensor(label_ids, dtype=torch.long)
+    tokenized_inputs["word_ids"] = torch.tensor(
+        [[-1 if word_id is None else word_id for word_id in word_ids]], dtype=torch.long
+    )
     return tokenized_inputs
 
 
@@ -129,6 +129,7 @@ def apply_tokenizer_transforms(
             label: idx
             for idx, label in enumerate(sorted(set(model_evaluator.model.labels)))
         }
+        log_info("forward label number %s", len(labels))
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
