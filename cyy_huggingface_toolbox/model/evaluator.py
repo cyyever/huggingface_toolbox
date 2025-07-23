@@ -125,9 +125,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
                 device=device, non_blocking=non_blocking
             )
         model_input = self._create_input(**kwargs)
+        res = {"word_ids": model_input.pop("word_ids", None)}
         output = self.model(**model_input)
-        return self._compute_loss(
-            **model_input, **output, evaluation_mode=evaluation_mode
+        return (
+            self._compute_loss(**model_input, **output, evaluation_mode=evaluation_mode)
+            | res
         )
 
     def _compute_loss(self, **kwargs: Any) -> dict:
