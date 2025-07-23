@@ -66,7 +66,7 @@ def filter_labels(
         else:
             assert phase != MachineLearningPhase.Training
             new_sample_labels.append(labels[background_label])
-    example["targets"] = new_sample_labels
+    example["target"] = new_sample_labels
     return example
 
 
@@ -88,7 +88,7 @@ def tokenize_and_align_labels(
     # print("word_ids", word_ids)
     # print("new_tokens ", new_tokens)
     previous_word_idx: None | int = None
-    sample_labels = example.get("targets")
+    sample_labels = example.get("target")
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
