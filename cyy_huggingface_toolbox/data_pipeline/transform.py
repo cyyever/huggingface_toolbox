@@ -67,6 +67,7 @@ def filter_labels(
             assert phase != MachineLearningPhase.Training
             new_sample_labels.append(labels[background_label])
     example["target"] = new_sample_labels
+    example["labels"] = sample_labels
     return example
 
 
@@ -82,13 +83,9 @@ def tokenize_and_align_labels(
     word_ids = tokenized_inputs.word_ids(
         batch_index=0
     )  # Map tokens to their respective word.
-    # new_tokens = tokenized_inputs.tokens(
-    #     batch_index=0
-    # )  # Map tokens to their respective word.
-    # print("word_ids", word_ids)
-    # print("new_tokens ", new_tokens)
     previous_word_idx: None | int = None
     sample_labels = example.get("target")
+    assert len(example["tokens"]) == len(sample_labels)
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
@@ -96,21 +93,15 @@ def tokenize_and_align_labels(
         elif (
             word_idx != previous_word_idx
         ):  # Only label the first token of a given word.
-            # log_info("label is %s word_idx is %s", label, word_idx)
+            # if sample_labels[word_idx] != -100:
+            #     print("attention word", example["tokens"][word_idx], example["labels"][word_idx])
             label_ids.append(sample_labels[word_idx])
         else:
             label_ids.append(-100)
         previous_word_idx = word_idx
-    # print("labels are", label_ids)
 
     tokenized_inputs["labels"] = torch.tensor(label_ids, dtype=torch.long)
     return tokenized_inputs
-
-
-# def collect_label(data: Any) -> Any:
-#     assert len(data["ner_tags"]) == len(data["input_ids"])
-#     data["labels"] = data.pop("ner_tags")
-#     return data
 
 
 def apply_tokenizer_transforms(
