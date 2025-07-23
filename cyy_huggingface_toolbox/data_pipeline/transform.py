@@ -59,10 +59,10 @@ def filter_labels(
     new_sample_labels = []
     for a in sample_labels:
         if a in labels:
-            if a == background_label and phase == MachineLearningPhase.Training:
-                new_sample_labels.append(-100)
-            else:
-                new_sample_labels.append(labels[a])
+            # if a == background_label and phase == MachineLearningPhase.Training:
+            #     new_sample_labels.append(-100)
+            # else:
+            new_sample_labels.append(labels[a])
         else:
             assert phase != MachineLearningPhase.Training
             new_sample_labels.append(labels[background_label])
@@ -165,7 +165,7 @@ def apply_tokenizer_transforms(
             ),
         )
         dc.append_named_transform(
-            BatchTransform(fun=merge_batch_encodings, cacheable=True)
+            BatchTransform(fun=merge_batch_encodings, cacheable=False)
         )
         return
     dc.append_named_transform(
