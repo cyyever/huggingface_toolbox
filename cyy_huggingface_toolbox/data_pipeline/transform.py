@@ -37,12 +37,42 @@ def merge_batch_encodings(data: Any) -> Any:
     return transformers.BatchEncoding(result)
 
 
-def tokenize_and_align_labels(
-    tokenizer: transformers.PreTrainedTokenizerFast,
-    tokenizer_kwargs: Any,
+def filter_labels(
     labels: dict,
     phase: MachineLearningPhase,
     background_label: str,
+    example: Any,
+) -> Any:
+    key = "ner_tags"
+    sample_labels = example.get(key)
+    if sample_labels is None:
+        key = "labels"
+        sample_labels = example.get(key)
+    if sample_labels is None:
+        key = "tags"
+        sample_labels = example.get(key)
+    assert sample_labels is not None
+    assert background_label in labels
+
+    assert isinstance(sample_labels[0], str)
+
+    new_sample_labels = []
+    for a in sample_labels:
+        if a in labels:
+            if a == background_label and phase == MachineLearningPhase.Training:
+                new_sample_labels.append(-100)
+            else:
+                new_sample_labels.append(labels[a])
+        else:
+            assert phase != MachineLearningPhase.Training
+            new_sample_labels.append(labels[background_label])
+    example["targets"] = new_sample_labels
+    return example
+
+
+def tokenize_and_align_labels(
+    tokenizer: transformers.PreTrainedTokenizerFast,
+    tokenizer_kwargs: Any,
     example,
 ) -> transformers.BatchEncoding:
     tokenized_inputs = tokenizer(
@@ -58,26 +88,7 @@ def tokenize_and_align_labels(
     # print("word_ids", word_ids)
     # print("new_tokens ", new_tokens)
     previous_word_idx: None | int = None
-    sample_labels = example.get("ner_tags")
-    if sample_labels is None:
-        sample_labels = example.get("labels")
-    if sample_labels is None:
-        sample_labels = example.get("tags")
-    assert sample_labels is not None
-    assert background_label in labels
-
-    assert isinstance(sample_labels[0], str)
-    new_sample_labels = []
-    for a in sample_labels:
-        if a in labels:
-            if a == background_label and phase == MachineLearningPhase.Training:
-                new_sample_labels.append(-100)
-            else:
-                new_sample_labels.append(labels[a])
-        else:
-            assert phase != MachineLearningPhase.Training
-            new_sample_labels.append(labels[background_label])
-    sample_labels = new_sample_labels
+    sample_labels = example.get("targets")
     label_ids: list[int] = []
     for word_idx in word_ids:  # Set the special tokens to -100.
         if word_idx is None:
@@ -130,9 +141,7 @@ def apply_tokenizer_transforms(
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
-                    tokenize_and_align_labels,
-                    model_evaluator.tokenizer,
-                    tokenizer_kwargs,
+                    filter_labels,
                     labels,
                     MachineLearningPhase.Training,
                     "O",
@@ -144,9 +153,7 @@ def apply_tokenizer_transforms(
         dc.append_named_transform(
             Transform(
                 fun=functools.partial(
-                    tokenize_and_align_labels,
-                    model_evaluator.tokenizer,
-                    tokenizer_kwargs,
+                    filter_labels,
                     labels,
                     MachineLearningPhase.Test,
                     "O",
@@ -154,6 +161,16 @@ def apply_tokenizer_transforms(
                 cacheable=True,
             ),
             phases=[MachineLearningPhase.Validation, MachineLearningPhase.Test],
+        )
+        dc.append_named_transform(
+            Transform(
+                fun=functools.partial(
+                    tokenize_and_align_labels,
+                    model_evaluator.tokenizer,
+                    tokenizer_kwargs,
+                ),
+                cacheable=True,
+            ),
         )
         dc.append_named_transform(
             BatchTransform(fun=merge_batch_encodings, cacheable=True)
