@@ -31,8 +31,8 @@ def merge_batch_encodings(data: Any) -> Any:
     for k in encodings[0]:
         result[k] = torch.concat([b[k] for b in encodings], dim=0)
     result["labels"] = result["labels"].flatten()
-    log_debug("input_ids shape %s", result["input_ids"].shape)
-    log_debug("labels shape %s", result["labels"].shape)
+    # log_debug("input_ids shape %s", result["input_ids"].shape)
+    # log_debug("labels shape %s", result["labels"].shape)
 
     return transformers.BatchEncoding(result)
 
