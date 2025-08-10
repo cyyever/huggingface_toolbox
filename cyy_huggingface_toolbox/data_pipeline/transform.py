@@ -4,7 +4,7 @@ from typing import Any
 
 import torch
 import transformers
-from cyy_naive_lib.log import log_debug, log_info
+from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox import (
     BatchTransform,
     DatasetCollection,
