@@ -22,8 +22,13 @@ from ..tokenizer import HuggingFaceTokenizer
 from .evaluator import HuggingFaceModelEvaluator
 from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
+from .util import get_vllm
 
-__all__ = ["HuggingFaceModelEvaluator", "HuggingFaceModelEvaluatorForFinetune"]
+__all__ = [
+    "HuggingFaceModelEvaluator",
+    "HuggingFaceModelEvaluatorForFinetune",
+    "get_vllm",
+]
 
 
 def __get_model_evaluator(
