@@ -33,6 +33,6 @@ def get_vllm(
         generation_config="auto",
         tokenizer=model_name,
         dtype="bfloat16",
-        max_model_len=2048,
     )
+    llm.get_tokenizter().padding_side = "left"
     return llm
