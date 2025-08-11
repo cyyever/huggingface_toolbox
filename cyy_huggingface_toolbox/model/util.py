@@ -34,5 +34,5 @@ def get_vllm(
         tokenizer=model_name,
         dtype="bfloat16",
     )
-    llm.get_tokenizter().padding_side = "left"
+    llm.get_tokenizer().padding_side = "left"
     return llm
