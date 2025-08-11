@@ -21,7 +21,7 @@ def merge_peft_model_for_vllm(
 
 
 def get_vllm(
-    pretrained_model_name_or_path: str, finetuned_model_dir: str | None = None
+    pretrained_model_name_or_path: str, finetuned_model_dir: str | None = None, **kwargs
 ) -> LLM:
     model_name = pretrained_model_name_or_path
     if finetuned_model_dir is not None:
@@ -30,9 +30,9 @@ def get_vllm(
         )
     llm = LLM(
         model=pretrained_model_name_or_path,
-        generation_config="auto",
         tokenizer=model_name,
         dtype="bfloat16",
+        **kwargs,
     )
     llm.get_tokenizer().padding_side = "left"
     return llm
