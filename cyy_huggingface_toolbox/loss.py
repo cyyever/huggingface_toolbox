@@ -3,7 +3,7 @@ from typing import Any
 import torch.nn
 
 
-# Copyied from torchvision
+# Copied from torchvision
 def sigmoid_focal_loss(
     inputs: torch.Tensor,
     targets: torch.Tensor,
