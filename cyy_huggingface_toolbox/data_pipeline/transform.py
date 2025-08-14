@@ -5,16 +5,16 @@ from typing import Any
 import torch
 import transformers
 from cyy_naive_lib.log import log_info
-from cyy_torch_toolbox import (
+from cyy_preprocessing_pipeline.common import (
     BatchTransform,
+    Transform,
+    replace_str,
+)
+from cyy_torch_toolbox import (
     DatasetCollection,
     MachineLearningPhase,
     ModelType,
     TextDatasetCollection,
-    Transform,
-)
-from cyy_torch_toolbox.data_pipeline.common import (
-    replace_str,
 )
 
 from ..model import HuggingFaceModelEvaluator
