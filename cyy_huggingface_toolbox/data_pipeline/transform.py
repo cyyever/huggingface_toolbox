@@ -5,9 +5,11 @@ from typing import Any
 import torch
 import transformers
 from cyy_naive_lib.log import log_info
-from cyy_preprocessing_pipeline.common import (
+from cyy_preprocessing_pipeline import (
     BatchTransform,
     Transform,
+)
+from cyy_preprocessing_pipeline.common import (
     replace_str,
 )
 from cyy_torch_toolbox import (
