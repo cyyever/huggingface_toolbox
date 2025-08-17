@@ -1,9 +1,10 @@
 import os
-import torch
+from collections.abc import Generator
 
+import torch
 from peft.peft_model import PeftModel
 from transformers import AutoModelForCausalLM
-from vllm import LLM
+from vllm import LLM, RequestOutput, SamplingParams
 
 
 def merge_peft_model_for_vllm(
@@ -21,7 +22,7 @@ def merge_peft_model_for_vllm(
     return saved_model_path
 
 
-def get_vllm(
+def get_llm_engine(
     pretrained_model_name_or_path: str, finetuned_model_dir: str | None = None, **kwargs
 ) -> LLM:
     model_name = pretrained_model_name_or_path
@@ -42,3 +43,23 @@ def get_vllm(
     )
     llm.get_tokenizer().padding_side = "left"
     return llm
+
+
+def get_vllm_chat_output(
+    llm: LLM, dataloader, index_key: str, sampling_params: None | SamplingParams = None
+) -> Generator[tuple[RequestOutput, int | str]]:
+    # Load the default sampling parameters from the model.
+    if sampling_params is None:
+        sampling_params = SamplingParams(n=1, max_tokens=2048, temperature=0)
+
+    for batch in dataloader:
+        # Generate texts from the prompts. The output is a list of RequestOutput objects
+        # that contain the prompt, generated text, and other information.
+        yield from zip(
+            llm.chat(
+                batch["conversations"],
+                sampling_params=sampling_params,
+            ),
+            batch[index_key],
+            strict=False,
+        )
