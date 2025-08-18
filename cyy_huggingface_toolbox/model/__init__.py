@@ -22,12 +22,10 @@ from ..tokenizer import HuggingFaceTokenizer
 from .evaluator import HuggingFaceModelEvaluator
 from .finetune_evaluator import HuggingFaceModelEvaluatorForFinetune
 from .model import get_huggingface_constructor
-from .vllm import get_llm_engine
 
 __all__ = [
     "HuggingFaceModelEvaluator",
     "HuggingFaceModelEvaluatorForFinetune",
-    "get_llm_engine",
 ]
 
 
