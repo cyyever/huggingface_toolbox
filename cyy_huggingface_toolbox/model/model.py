@@ -47,7 +47,8 @@ def __create_huggingface_model(
                 )
             if bnb_config is not None:
                 model_kwargs["quantization_config"] = bnb_config
-                model_kwargs["torch_dtype"] = torch.bfloat16
+                if "torch_dtype" not in model_kwargs:
+                    model_kwargs["torch_dtype"] = torch.bfloat16
             model = transformers_module.from_pretrained(model_name, **model_kwargs)
             if bnb_config is not None:
                 return prepare_model_for_kbit_training(
