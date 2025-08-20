@@ -40,6 +40,7 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         log_info("Use peft config %s", peft_config)
         model = self.model
         assert isinstance(model, PreTrainedModel)
+        self.peft_config = peft_config
         self.set_model(get_peft_model(model=model, peft_config=peft_config))
 
     @property
