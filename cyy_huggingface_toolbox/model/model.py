@@ -32,15 +32,14 @@ def __create_huggingface_model(
             model_kwargs.pop("finetune_modules", None)
             model_kwargs.pop("finetune_config", None)
             bnb_config: BitsAndBytesConfig | None = None
-            if "load_in_4bit" in model_kwargs:
-                model_kwargs.pop("load_in_4bit")
+            if model_kwargs.pop("load_in_4bit", False):
                 bnb_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=torch.bfloat16,
                     bnb_4bit_use_double_quant=False,
                     bnb_4bit_quant_type="nf4",
                 )
-            elif "load_in_8bit" in model_kwargs:
+            elif model_kwargs.pop("load_in_8bit", False):
                 model_kwargs.pop("load_in_8bit")
                 bnb_config = BitsAndBytesConfig(
                     load_in_8bit=True,
@@ -49,12 +48,12 @@ def __create_huggingface_model(
                 model_kwargs["quantization_config"] = bnb_config
                 if "torch_dtype" not in model_kwargs:
                     model_kwargs["torch_dtype"] = torch.bfloat16
-            prepare_model_for_kbit_training = model_kwargs.pop(
+            prepare_model_for_kbit_training_flag = model_kwargs.pop(
                 "prepare_model_for_kbit_training", True
             )
             model = transformers_module.from_pretrained(model_name, **model_kwargs)
             if bnb_config is not None:
-                if prepare_model_for_kbit_training:
+                if prepare_model_for_kbit_training_flag:
                     return prepare_model_for_kbit_training(
                         model, use_gradient_checkpointing=use_gradient_checkpointing
                     )
