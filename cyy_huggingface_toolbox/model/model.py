@@ -48,15 +48,14 @@ def __create_huggingface_model(
                 model_kwargs["quantization_config"] = bnb_config
                 if "torch_dtype" not in model_kwargs:
                     model_kwargs["torch_dtype"] = torch.bfloat16
-            prepare_model_for_kbit_training_flag = model_kwargs.pop(
-                "prepare_model_for_kbit_training", True
-            )
+            # prepare_model_for_kbit_training_flag = model_kwargs.pop(
+            #     "prepare_model_for_kbit_training", True
+            # )
             model = transformers_module.from_pretrained(model_name, **model_kwargs)
             if bnb_config is not None:
-                if prepare_model_for_kbit_training_flag:
-                    return prepare_model_for_kbit_training(
-                        model, use_gradient_checkpointing=use_gradient_checkpointing
-                    )
+                return prepare_model_for_kbit_training(
+                    model, use_gradient_checkpointing=use_gradient_checkpointing
+                )
             return model
 
         log_warning("use huggingface without pretrained parameters")
