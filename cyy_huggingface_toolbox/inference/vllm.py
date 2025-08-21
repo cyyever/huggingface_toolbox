@@ -17,7 +17,9 @@ def merge_peft_model_for_vllm(
     )
     model = finetuned_model.merge_and_unload()
     saved_model_path = os.path.abspath(os.path.join(os.path.curdir, "finetuned_model"))
-    assert not os.path.exists(saved_model_path)
+    if os.path.exists(saved_model_path):
+        assert os.path.isfile(saved_model_path)
+        os.remove(saved_model_path)
     model.save_pretrained(saved_model_path)
     return saved_model_path
 
@@ -34,7 +36,7 @@ def get_llm_engine(
         if torch.cuda.is_available():
             kwargs["tensor_parallel_size"] = torch.cuda.device_count()
     if "gpu_memory_utilization" not in kwargs:
-        kwargs["gpu_memory_utilization"] = 0.5
+        kwargs["gpu_memory_utilization"] = 0.8
     llm = LLM(
         model=pretrained_model_name_or_path,
         tokenizer=model_name,
