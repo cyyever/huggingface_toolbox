@@ -18,8 +18,8 @@ def merge_peft_model_for_vllm(
     model = finetuned_model.merge_and_unload()
     saved_model_path = os.path.abspath(os.path.join(os.path.curdir, "finetuned_model"))
     if os.path.exists(saved_model_path):
-        assert os.path.isfile(saved_model_path)
-        os.remove(saved_model_path)
+        assert os.path.isdir(saved_model_path)
+        os.rmdir(saved_model_path)
     model.save_pretrained(saved_model_path)
     return saved_model_path
 
