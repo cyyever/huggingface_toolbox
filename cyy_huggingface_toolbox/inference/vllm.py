@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections.abc import Generator
 
 import torch
@@ -19,7 +20,7 @@ def merge_peft_model_for_vllm(
     saved_model_path = os.path.abspath(os.path.join(os.path.curdir, "finetuned_model"))
     if os.path.exists(saved_model_path):
         assert os.path.isdir(saved_model_path)
-        os.rmdir(saved_model_path)
+        shutil.rmtree(saved_model_path)
     model.save_pretrained(saved_model_path)
     return saved_model_path
 
