@@ -1,5 +1,6 @@
 import copy
 import functools
+import os
 from collections.abc import Callable
 from typing import Any
 
@@ -97,15 +98,17 @@ def get_huggingface_constructor(
             ModelType.CausalLM,
         ),
         (
-            "file://",
+            "file",
             transformers.AutoModel,
             ModelType.UnknownType,
         ),
     ]
     for prefix, transformers_module, model_type in prefix_to_module:
-        real_name :str|None=None
+        real_name: str | None = None
         if model_name.startswith(prefix):
             real_name = model_name.removeprefix(prefix)
+        if prefix == "file" and os.path.isfile(model_name):
+            real_name = model_name
         if real_name is not None:
             return (
                 functools.partial(
