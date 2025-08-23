@@ -96,10 +96,17 @@ def get_huggingface_constructor(
             transformers.AutoModelForCausalLM,
             ModelType.CausalLM,
         ),
+        (
+            "file://",
+            transformers.AutoModel,
+            ModelType.UnknownType,
+        ),
     ]
     for prefix, transformers_module, model_type in prefix_to_module:
+        real_name :str|None=None
         if model_name.startswith(prefix):
             real_name = model_name.removeprefix(prefix)
+        if real_name is not None:
             return (
                 functools.partial(
                     __create_huggingface_model,
