@@ -107,8 +107,18 @@ def get_huggingface_constructor(
         real_name: str | None = None
         if model_name.startswith(prefix):
             real_name = model_name.removeprefix(prefix)
-        if prefix == "file" and os.path.isfile(model_name):
-            real_name = model_name
+        if prefix == "file":
+            if os.path.exists(model_name):
+                if os.path.isdir(model_name):
+                    real_name = model_name
+                    log_warning("load local huggingface model: %s", real_name)
+                else:
+                    log_warning(
+                        "expect the local hugging face model to be a folder, but it is a file: %s",
+                        model_name,
+                    )
+            elif model_name.startswith("/"):
+                log_warning("not a path %s", model_name)
         if real_name is not None:
             return (
                 functools.partial(
