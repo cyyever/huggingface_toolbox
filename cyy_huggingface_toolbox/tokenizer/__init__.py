@@ -8,7 +8,13 @@ from cyy_torch_toolbox import TokenIDsType, TokenIDType, TokenizerMixin
 class HuggingFaceTokenizer(TokenizerMixin):
     def __init__(self, tokenizer_config: dict) -> None:
         self.tokenizer_config = tokenizer_config.copy()
+        self.__tokenizer = None
         # # # self.tokenizer.padding_side = "left"
+
+    def __getstate__(self) -> dict:
+        state = super().__getstate__()
+        state["_HuggingFaceTokenizer__tokenizer"] = None
+        return state
 
     @property
     def tokenizer(self) -> transformers.PreTrainedTokenizerFast:
