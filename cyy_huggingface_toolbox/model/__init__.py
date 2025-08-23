@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 import transformers
-from cyy_naive_lib.log import log_info, log_warning
+from cyy_naive_lib.log import log_info, log_warning, log_debug
 from cyy_torch_toolbox import (
     DatasetCollection,
     DatasetType,
@@ -77,14 +77,22 @@ class HuggingFaceModelFactory(Factory):
     ) -> dict:
         final_model_kwargs: dict = copy.deepcopy(kwargs)
         final_model_kwargs.pop("name", None)
+        model = create_model(constructor, **final_model_kwargs)
+        log_debug("real_name is ", real_name)
         tokenizer_kwargs = {}
         if dataset_collection is not None:
             tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
-        tokenizer_kwargs["name"] = real_name
+        if "name" not in tokenizer_kwargs:
+            tokenizer_kwargs["name"] = real_name
         tokenizer = HuggingFaceTokenizer(tokenizer_kwargs)
         log_info("tokenizer is %s", type(tokenizer.tokenizer))
-
-        model = create_model(constructor, **final_model_kwargs)
+        if model_type == ModelType.UnknownType:
+            log_debug("config dict is %s", model.config.get_config_dict(real_name))
+            architectures = model.config.get_config_dict(real_name)[0]["architectures"]
+            for arch in architectures:
+                if "ForCausalLM".lower() in arch.lower():
+                    model_type = ModelType.CausalLM
+                    break
 
         return {"model": model, "tokenizer": tokenizer, "model_type": model_type}
 

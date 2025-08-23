@@ -10,8 +10,8 @@ class HuggingFaceTokenizer(TokenizerMixin):
         self.__tokenizer: transformers.PreTrainedTokenizerFast = (
             transformers.AutoTokenizer.from_pretrained(
                 tokenizer_config["name"],
-                **tokenizer_config.get("kwargs", {}),
                 use_fast=True,
+                **tokenizer_config.get("kwargs", {}),
             )
         )
         if self.tokenizer.pad_token is None:
