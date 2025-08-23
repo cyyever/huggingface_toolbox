@@ -33,9 +33,8 @@ def get_llm_engine(
         pretrained_model_name_or_path = merge_peft_model_for_vllm(
             pretrained_model_name_or_path, finetuned_model_dir
         )
-    if "tensor_parallel_size" not in kwargs:
-        if torch.cuda.is_available():
-            kwargs["tensor_parallel_size"] = torch.cuda.device_count()
+    if "tensor_parallel_size" not in kwargs and torch.cuda.is_available():
+        kwargs["tensor_parallel_size"] = torch.cuda.device_count()
     if "gpu_memory_utilization" not in kwargs:
         kwargs["gpu_memory_utilization"] = 0.8
     llm = LLM(
