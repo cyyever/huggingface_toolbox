@@ -37,13 +37,18 @@ def get_llm_engine(
         kwargs["tensor_parallel_size"] = torch.cuda.device_count()
     if "gpu_memory_utilization" not in kwargs:
         kwargs["gpu_memory_utilization"] = 0.8
+    if "dtype" not in kwargs:
+        kwargs["dtype"] = "bfloat16"
+
     llm = LLM(
         model=pretrained_model_name_or_path,
         tokenizer=model_name,
-        dtype="bfloat16",
         **kwargs,
     )
-    llm.get_tokenizer().padding_side = "left"
+    tokenizer = llm.get_tokenizer()
+    tokenizer.padding_side = "left"
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     return llm
 
 
