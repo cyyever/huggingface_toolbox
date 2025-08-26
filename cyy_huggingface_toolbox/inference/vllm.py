@@ -4,13 +4,18 @@ from collections.abc import Generator
 
 import torch
 from peft.peft_model import PeftModel
-from transformers import AutoModelForCausalLM, AutoModelForImageTextToText
+from transformers import (
+    AutoModelForCausalLM,
+    AutoModelForImageTextToText,
+    ProcessorMixin,
+)
 from vllm import LLM, RequestOutput, SamplingParams
 
 
 def merge_peft_model_for_vllm(
     pretrained_model_name_or_path: str,
     finetuned_model_dir: str,
+    processor: ProcessorMixin | None = None,
 ) -> str:
     try:
         model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path)
@@ -27,16 +32,21 @@ def merge_peft_model_for_vllm(
         assert os.path.isdir(saved_model_path)
         shutil.rmtree(saved_model_path)
     model.save_pretrained(saved_model_path)
+    if processor is not None:
+        processor.save_pretrained(saved_model_path)
     return saved_model_path
 
 
 def get_llm_engine(
-    pretrained_model_name_or_path: str, finetuned_model_dir: str | None = None, **kwargs
+    pretrained_model_name_or_path: str,
+    finetuned_model_dir: str | None = None,
+    processor: ProcessorMixin | None = None,
+    **kwargs,
 ) -> LLM:
     model_name = pretrained_model_name_or_path
     if finetuned_model_dir is not None:
         pretrained_model_name_or_path = merge_peft_model_for_vllm(
-            pretrained_model_name_or_path, finetuned_model_dir
+            pretrained_model_name_or_path, finetuned_model_dir, processor=processor
         )
     if "tensor_parallel_size" not in kwargs and torch.cuda.is_available():
         kwargs["tensor_parallel_size"] = torch.cuda.device_count()
