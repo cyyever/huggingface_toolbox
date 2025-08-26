@@ -4,7 +4,7 @@ from collections.abc import Generator
 
 import torch
 from peft.peft_model import PeftModel
-from transformers import AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoModelForImageTextToText
 from vllm import LLM, RequestOutput, SamplingParams
 
 
@@ -12,7 +12,12 @@ def merge_peft_model_for_vllm(
     pretrained_model_name_or_path: str,
     finetuned_model_dir: str,
 ) -> str:
-    model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path)
+    except BaseException:
+        model = AutoModelForImageTextToText.from_pretrained(
+            pretrained_model_name_or_path
+        )
     finetuned_model = PeftModel.from_pretrained(
         model=model, model_id=finetuned_model_dir
     )
