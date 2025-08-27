@@ -4,9 +4,6 @@ from collections.abc import Generator
 
 import torch
 from peft.peft_model import PeftModel
-from peft.tuners.tuners_utils import (
-    BaseTuner,
-)
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForImageTextToText,

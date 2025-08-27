@@ -78,7 +78,7 @@ class HuggingFaceModelFactory(Factory):
         final_model_kwargs: dict = copy.deepcopy(kwargs)
         final_model_kwargs.pop("name", None)
         model = create_model(constructor, **final_model_kwargs)
-        log_debug("real_name is ", real_name)
+        log_debug("real_name is %s", real_name)
         tokenizer_kwargs = {}
         if dataset_collection is not None:
             tokenizer_kwargs = dataset_collection.dataset_kwargs.get("tokenizer", {})
