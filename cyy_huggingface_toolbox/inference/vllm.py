@@ -4,6 +4,9 @@ from collections.abc import Generator
 
 import torch
 from peft.peft_model import PeftModel
+from peft.tuners.tuners_utils import (
+    BaseTuner,
+)
 from transformers import (
     AutoModelForCausalLM,
     AutoModelForImageTextToText,
@@ -27,7 +30,9 @@ def merge_peft_model_for_vllm(
         model=model, model_id=finetuned_model_dir
     )
     model = finetuned_model.merge_and_unload()
-    saved_model_path = os.path.abspath(os.path.join(os.path.curdir, "finetuned_model"))
+    saved_model_path = os.path.abspath(
+        os.path.join(finetuned_model_dir, "finetuned_model_for_vllm")
+    )
     if os.path.exists(saved_model_path):
         assert os.path.isdir(saved_model_path)
         shutil.rmtree(saved_model_path)
