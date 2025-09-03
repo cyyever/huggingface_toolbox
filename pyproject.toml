@@ -58,4 +58,4 @@ select = [
   "RUF",
 ]
 
-ignore = ["F403"]
+ignore = ["E501"]
