@@ -47,8 +47,8 @@ def __create_huggingface_model(
                 )
             if bnb_config is not None:
                 model_kwargs["quantization_config"] = bnb_config
-                if "torch_dtype" not in model_kwargs:
-                    model_kwargs["torch_dtype"] = torch.bfloat16
+                if "dtype" not in model_kwargs:
+                    model_kwargs["dtype"] = torch.bfloat16
             # prepare_model_for_kbit_training_flag = model_kwargs.pop(
             #     "prepare_model_for_kbit_training", True
             # )
