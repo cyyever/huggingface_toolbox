@@ -10,7 +10,7 @@ from datasets import Split, load_dataset_builder
 from datasets import load_dataset as load_hugging_face_dataset
 
 
-class HunggingFaceFactory(DatasetFactory):
+class HuggingFaceFactory(DatasetFactory):
     def get(
         self, key: str, case_sensitive: bool = True, default: Any = None, **kwargs: Any
     ) -> functools.partial[Any] | None:
@@ -26,7 +26,12 @@ class HunggingFaceFactory(DatasetFactory):
 
     @classmethod
     def __get_dataset(
-        cls, path: str, cache_dir: str, split: Any, name: str | None = None, **kwargs: Any
+        cls,
+        path: str,
+        cache_dir: str,
+        split: Any,
+        name: str | None = None,
+        **kwargs: Any,
     ) -> Any:
         if "train" in split:
             split = Split.TRAIN
@@ -71,7 +76,9 @@ class HunggingFaceFactory(DatasetFactory):
         return dataset
 
     @classmethod
-    def __has_dataset(cls, key: str, cache_dir: str, dataset_kwargs: dict[str, Any]) -> bool:
+    def __has_dataset(
+        cls, key: str, cache_dir: str, dataset_kwargs: dict[str, Any]
+    ) -> bool:
         if key.startswith("hugging_face_"):
             return True
         if os.path.exists(cls.__dataset_cache_dir(cache_dir)):

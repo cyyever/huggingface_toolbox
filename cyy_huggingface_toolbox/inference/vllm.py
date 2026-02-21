@@ -71,7 +71,10 @@ def get_llm_engine(
 
 
 def get_vllm_chat_output(
-    llm: LLM, dataloader: Iterable[dict[str, Any]], index_key: str, sampling_params: SamplingParams | None = None
+    llm: LLM,
+    dataloader: Iterable[dict[str, Any]],
+    index_key: str,
+    sampling_params: SamplingParams | None = None,
 ) -> Generator[tuple[RequestOutput, int | str]]:
     # Load the default sampling parameters from the model.
     if sampling_params is None:

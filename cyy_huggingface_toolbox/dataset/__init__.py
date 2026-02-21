@@ -3,6 +3,6 @@ from cyy_torch_toolbox.dataset.repository import (
     register_dataset_factory,
 )
 
-from .repository import HunggingFaceFactory
+from .repository import HuggingFaceFactory
 
-register_dataset_factory(factory=HunggingFaceFactory(), dataset_type=DatasetType.Text)
+register_dataset_factory(factory=HuggingFaceFactory(), dataset_type=DatasetType.Text)

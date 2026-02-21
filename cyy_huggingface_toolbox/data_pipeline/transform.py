@@ -216,7 +216,9 @@ def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict[str, A
     return data
 
 
-def add_text_extraction(dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator) -> None:
+def add_text_extraction(
+    dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator
+) -> None:
     dc.append_named_transform(
         Transform(
             fun=functools.partial(

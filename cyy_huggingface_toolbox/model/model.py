@@ -41,7 +41,6 @@ def __create_huggingface_model(
                     bnb_4bit_quant_type="nf4",
                 )
             elif model_kwargs.pop("load_in_8bit", False):
-                model_kwargs.pop("load_in_8bit")
                 bnb_config = BitsAndBytesConfig(
                     load_in_8bit=True,
                 )

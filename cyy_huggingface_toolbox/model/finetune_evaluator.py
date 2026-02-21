@@ -56,11 +56,11 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         return _model
 
     @classmethod
-    def get_perf_model_state_dict(cls, model: torch.nn.Module) -> TensorDict:
+    def get_peft_model_state_dict(cls, model: torch.nn.Module) -> TensorDict:
         assert isinstance(model, PeftModel)
         return get_peft_model_state_dict(model)
 
-    def load_perf_model_state_dict(
+    def load_peft_model_state_dict(
         self, state_dict: TensorDict, device: torch.device
     ) -> None:
         state_dict = tensor_to(state_dict, device=device)
@@ -73,8 +73,8 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
 
     def to_device(self, device: torch.device, non_blocking: bool = True) -> None:
         self.model_util.to_device(device=device, non_blocking=non_blocking)
-        perf_model_state_dict = self.get_perf_model_state_dict(self.peft_model)
-        self.load_perf_model_state_dict(state_dict=perf_model_state_dict, device=device)
+        perf_model_state_dict = self.get_peft_model_state_dict(self.peft_model)
+        self.load_peft_model_state_dict(state_dict=perf_model_state_dict, device=device)
 
     @property
     def loss_fun(self) -> Callable:
