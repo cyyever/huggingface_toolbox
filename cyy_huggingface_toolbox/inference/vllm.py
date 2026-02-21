@@ -1,6 +1,7 @@
 import os
 import shutil
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
+from typing import Any
 
 import torch
 from peft.peft_model import PeftModel
@@ -43,7 +44,7 @@ def get_llm_engine(
     pretrained_model_name_or_path: str,
     finetuned_model_dir: str | None = None,
     processor: ProcessorMixin | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> LLM:
     model_name = pretrained_model_name_or_path
     if finetuned_model_dir is not None:
@@ -70,7 +71,7 @@ def get_llm_engine(
 
 
 def get_vllm_chat_output(
-    llm: LLM, dataloader, index_key: str, sampling_params: None | SamplingParams = None
+    llm: LLM, dataloader: Iterable[dict[str, Any]], index_key: str, sampling_params: SamplingParams | None = None
 ) -> Generator[tuple[RequestOutput, int | str]]:
     # Load the default sampling parameters from the model.
     if sampling_params is None:

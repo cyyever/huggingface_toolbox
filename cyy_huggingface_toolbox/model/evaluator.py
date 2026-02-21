@@ -11,7 +11,7 @@ from ..tokenizer import HuggingFaceTokenizer
 
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
-    def __init__(self, model, **kwargs: Any) -> None:
+    def __init__(self, model: transformers.PreTrainedModel, **kwargs: Any) -> None:
         super().__init__(model=model, **kwargs)
         self.__tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
 
@@ -30,7 +30,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def set_tokenizer(self, tokenizer: HuggingFaceTokenizer) -> None:
         self.__tokenizer = tokenizer
 
-    def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict:
+    def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict[str, Any]:
         batch_dim = 0
         new_inputs = []
         batch_size: int = kwargs["batch_size"]
@@ -68,9 +68,9 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _create_input(
         self,
         *,
-        inputs: dict,
+        inputs: dict[str, Any],
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[str, Any]:
         match self.model_type:
             case ModelType.CausalLM:
                 for v in inputs.values():
@@ -111,13 +111,13 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
         self,
         *,
         device: torch.device | None = None,
-        evaluation_mode: Any = None,
-        batch_index: Any = None,
-        batch_size: Any = None,
+        evaluation_mode: EvaluationMode | None = None,
+        batch_index: int | None = None,
+        batch_size: int | None = None,
         non_blocking: bool | None = None,
         phase: Any = None,
         **kwargs: Any,
-    ) -> dict:
+    ) -> dict[str, Any]:
         if "generate" in kwargs:
             return {"output": self.generate(**kwargs)}
         if "input_ids" in kwargs:
@@ -132,7 +132,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             | res
         )
 
-    def _compute_loss(self, **kwargs: Any) -> dict:
+    def _compute_loss(self, **kwargs: Any) -> dict[str, Any]:
         ignore_index: int = -100
         assert kwargs.pop("reduce_loss", True)
         loss = kwargs.pop("loss", None)
@@ -160,7 +160,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             res["logits"] = kwargs["logits"]
         return res
 
-    def _choose_loss_function_type(self) -> None | type:
+    def _choose_loss_function_type(self) -> type | None:
         return None
 
     def _choose_loss_function(self) -> Callable:

@@ -49,7 +49,7 @@ for dataset_type in (DatasetType.Text, DatasetType.CodeText):
 class HuggingFaceModelFactory(Factory):
     def get(
         self, key: str, case_sensitive: bool = True, default: Any = None
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         assert case_sensitive
         assert default is None
         model_name = key
@@ -74,8 +74,8 @@ class HuggingFaceModelFactory(Factory):
         constructor: Callable,
         dataset_collection: DatasetCollection | None = None,
         **kwargs: Any,
-    ) -> dict:
-        final_model_kwargs: dict = copy.deepcopy(kwargs)
+    ) -> dict[str, Any]:
+        final_model_kwargs: dict[str, Any] = copy.deepcopy(kwargs)
         final_model_kwargs.pop("name", None)
         model = create_model(constructor, **final_model_kwargs)
         log_debug("real_name is %s", real_name)

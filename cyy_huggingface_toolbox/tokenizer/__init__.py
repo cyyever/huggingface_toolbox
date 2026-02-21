@@ -6,9 +6,9 @@ from cyy_torch_toolbox import TokenIDsType, TokenIDType, TokenizerMixin
 
 
 class HuggingFaceTokenizer(TokenizerMixin):
-    def __init__(self, tokenizer_config: dict) -> None:
-        self.tokenizer_config = tokenizer_config.copy()
-        self.__tokenizer = None
+    def __init__(self, tokenizer_config: dict[str, Any]) -> None:
+        self.tokenizer_config: dict[str, Any] = tokenizer_config.copy()
+        self.__tokenizer: transformers.PreTrainedTokenizerFast | None = None
         # # # self.tokenizer.padding_side = "left"
 
     def __getstate__(self) -> dict:

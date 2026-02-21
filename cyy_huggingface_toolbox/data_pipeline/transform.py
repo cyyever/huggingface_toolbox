@@ -22,7 +22,7 @@ from cyy_torch_toolbox import (
 from ..model import HuggingFaceModelEvaluator
 
 
-def merge_batch_encodings(data: Any) -> Any:
+def merge_batch_encodings(data: Any) -> Any | transformers.BatchEncoding:
     if not isinstance(data, dict):
         return data
     assert len(data) == 1 and "input" in data
@@ -40,11 +40,11 @@ def merge_batch_encodings(data: Any) -> Any:
 
 
 def filter_labels(
-    labels: dict,
+    labels: dict[str, int],
     phase: MachineLearningPhase,
     background_label: str,
-    example: Any,
-) -> Any:
+    example: dict[str, Any],
+) -> dict[str, Any]:
     key = "ner_tags"
     sample_labels = example.get(key)
     if sample_labels is None:
@@ -74,8 +74,8 @@ def filter_labels(
 
 def tokenize_and_align_labels(
     tokenizer: transformers.PreTrainedTokenizerFast,
-    tokenizer_kwargs: Any,
-    example,
+    tokenizer_kwargs: dict[str, Any],
+    example: dict[str, Any],
 ) -> transformers.BatchEncoding:
     tokenized_inputs = tokenizer(
         example["tokens"], is_split_into_words=True, **tokenizer_kwargs
@@ -207,7 +207,7 @@ def apply_tokenizer_transforms(
     )
 
 
-def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
+def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict[str, Any]:
     if model_type in (ModelType.TokenClassification,):
         match data:
             case {"data": data, "index": index}:
@@ -216,7 +216,7 @@ def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict:
     return data
 
 
-def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
+def add_text_extraction(dc: DatasetCollection, model_evaluator: HuggingFaceModelEvaluator) -> None:
     dc.append_named_transform(
         Transform(
             fun=functools.partial(
@@ -243,7 +243,7 @@ def add_text_extraction(dc: DatasetCollection, model_evaluator: Any) -> None:
                 dc.append_named_transform(t)
 
 
-def get_label_to_text_mapping(dataset_name: str) -> dict | None:
+def get_label_to_text_mapping(dataset_name: str) -> dict[int, str] | None:
     match dataset_name.lower():
         case "multi_nli":
             return {0: "entailment", 1: "neutral", 2: "contradiction"}

@@ -15,9 +15,9 @@ from transformers import BitsAndBytesConfig
 def __create_huggingface_model(
     transformers_module: Any,
     model_name: str,
-    pretrained: bool,
-    **model_kwargs,
-) -> Callable:
+    pretrained: bool = True,
+    **model_kwargs: Any,
+) -> transformers.PreTrainedModel:
     try:
         model_kwargs = copy.deepcopy(model_kwargs)
         if "device_map" not in model_kwargs:

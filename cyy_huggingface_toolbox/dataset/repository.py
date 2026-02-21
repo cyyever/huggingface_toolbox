@@ -12,8 +12,8 @@ from datasets import load_dataset as load_hugging_face_dataset
 
 class HunggingFaceFactory(DatasetFactory):
     def get(
-        self, key: Any, case_sensitive: bool = True, default: Any = None, **kwargs: Any
-    ) -> Any:
+        self, key: str, case_sensitive: bool = True, default: Any = None, **kwargs: Any
+    ) -> functools.partial[Any] | None:
         assert case_sensitive
         assert default is None
         cache_dir = kwargs.pop("cache_dir", None)
@@ -26,7 +26,7 @@ class HunggingFaceFactory(DatasetFactory):
 
     @classmethod
     def __get_dataset(
-        cls, path: str, cache_dir: str, split: Any, name: Any | None = None, **kwargs
+        cls, path: str, cache_dir: str, split: Any, name: str | None = None, **kwargs: Any
     ) -> Any:
         if "train" in split:
             split = Split.TRAIN
@@ -71,7 +71,7 @@ class HunggingFaceFactory(DatasetFactory):
         return dataset
 
     @classmethod
-    def __has_dataset(cls, key: Any, cache_dir: str, dataset_kwargs: dict) -> bool:
+    def __has_dataset(cls, key: str, cache_dir: str, dataset_kwargs: dict[str, Any]) -> bool:
         if key.startswith("hugging_face_"):
             return True
         if os.path.exists(cls.__dataset_cache_dir(cache_dir)):
