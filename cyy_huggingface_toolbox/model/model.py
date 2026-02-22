@@ -62,7 +62,7 @@ def __create_huggingface_model(
         config = transformers.AutoConfig.from_pretrained(model_name, **model_kwargs)
         model = transformers_module.from_config(config)
         return model
-    except BaseException as e:
+    except Exception as e:
         log_error(
             "Failed to create huggingface model, that shouldn't happen."
             " model_kwargs is %s, exception is %s",

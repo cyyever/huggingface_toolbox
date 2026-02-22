@@ -1,6 +1,6 @@
 import functools
 from collections.abc import Callable
-from typing import Any
+from typing import Any, override
 
 import torch
 import transformers
@@ -12,8 +12,8 @@ from ..tokenizer import HuggingFaceTokenizer
 
 class HuggingFaceModelEvaluator(ModelEvaluator):
     def __init__(self, model: transformers.PreTrainedModel, **kwargs: Any) -> None:
-        super().__init__(model=model, **kwargs)
         self.__tokenizer: HuggingFaceTokenizer = kwargs.pop("tokenizer", None)
+        super().__init__(model=model, **kwargs)
 
     @property
     def tokenizer_mixin(self) -> HuggingFaceTokenizer:
@@ -30,6 +30,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def set_tokenizer(self, tokenizer: HuggingFaceTokenizer) -> None:
         self.__tokenizer = tokenizer
 
+    @override
     def split_batch_input(self, inputs: Any, **kwargs: Any) -> dict[str, Any]:
         batch_dim = 0
         new_inputs = []
@@ -46,6 +47,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             return {"inputs": new_inputs, "batch_dim": batch_dim}
         return {"inputs": inputs, "batch_dim": batch_dim}
 
+    @override
     def get_input_feature(
         self, inputs: transformers.BatchEncoding
     ) -> transformers.BatchEncoding:
@@ -68,7 +70,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     def _create_input(
         self,
         *,
-        inputs: dict[str, Any],
+        inputs: dict[str, Any] | None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         match self.model_type:
@@ -107,6 +109,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             )
         return generated_texts
 
+    @override
     def _forward_model(
         self,
         *,
@@ -132,6 +135,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             | res
         )
 
+    @override
     def _compute_loss(self, **kwargs: Any) -> dict[str, Any]:
         ignore_index: int = -100
         assert kwargs.pop("reduce_loss", True)
@@ -160,9 +164,11 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
             res["logits"] = kwargs["logits"]
         return res
 
+    @override
     def _choose_loss_function_type(self) -> type | None:
         return None
 
+    @override
     def _choose_loss_function(self) -> Callable:
         loss_type = ""
         kwargs = {}

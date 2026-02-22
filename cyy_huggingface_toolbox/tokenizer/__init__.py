@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, override
 
 import torch
 import transformers
@@ -11,7 +11,8 @@ class HuggingFaceTokenizer(TokenizerMixin):
         self.__tokenizer: transformers.PreTrainedTokenizerFast | None = None
         # # # self.tokenizer.padding_side = "left"
 
-    def __getstate__(self) -> dict:
+    @override
+    def __getstate__(self) -> dict[str, Any]:
         state = super().__getstate__()
         state["_HuggingFaceTokenizer__tokenizer"] = None
         return state
@@ -49,14 +50,17 @@ class HuggingFaceTokenizer(TokenizerMixin):
         assert isinstance(input_ids_tensor, torch.Tensor)
         return input_ids_tensor.squeeze()
 
+    @override
     def get_tokens_from_transformed_result(self, transformed_result: Any) -> list[str]:
         batch_encoding = self.__get_batch_encoding_from_transformed_result(
             transformed_result
         )
         return batch_encoding.tokens()
 
+    @override
     def get_token_id(self, token: str) -> int | list[int]:
         return self.tokenizer.convert_tokens_to_ids(token)
 
+    @override
     def get_token(self, token_id: TokenIDType) -> str:
         return self.tokenizer.decode(token_id)

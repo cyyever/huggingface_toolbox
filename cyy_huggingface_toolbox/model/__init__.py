@@ -1,10 +1,10 @@
 import copy
 import functools
 from collections.abc import Callable
-from typing import Any
+from typing import Any, override
 
 import transformers
-from cyy_naive_lib.log import log_debug, log_info, log_warning
+from cyy_naive_lib.log import log_debug, log_info
 from cyy_torch_toolbox import (
     DatasetCollection,
     DatasetType,
@@ -47,6 +47,7 @@ for dataset_type in (DatasetType.Text, DatasetType.CodeText):
 
 
 class HuggingFaceModelFactory(Factory):
+    @override
     def get(
         self, key: str, case_sensitive: bool = True, default: Any = None
     ) -> dict[str, Any] | None:

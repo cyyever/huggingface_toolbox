@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cyy_huggingface_toolbox"
 version = "0.1"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 readme = {file = "README.md", content-type = "text/markdown"}
 authors = [
   {name = "cyy", email = "cyyever@outloo.com"},
@@ -32,7 +32,7 @@ Repository = "https://github.com/cyyever/huggingface_toolbox"
 cyy_huggingface_toolbox= ["py.typed"]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 src = ["cyy_huggingface_toolbox"]
 
 

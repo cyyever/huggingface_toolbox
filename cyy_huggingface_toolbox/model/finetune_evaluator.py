@@ -1,6 +1,6 @@
 import functools
 from collections.abc import Callable
-from typing import Any
+from typing import Any, override
 
 import torch.nn
 from cyy_naive_lib.log import log_debug, log_info
@@ -77,9 +77,11 @@ class HuggingFaceModelEvaluatorForFinetune(HuggingFaceModelEvaluator):
         self.load_peft_model_state_dict(state_dict=peft_model_state_dict, device=device)
 
     @property
+    @override
     def loss_fun(self) -> Callable:
         return self.underlying_model.loss_function
 
+    @override
     def set_loss_fun(self, loss_fun: Callable | str) -> None:
         model = self.underlying_model
         assert isinstance(model, PreTrainedModel)

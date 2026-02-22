@@ -1,7 +1,7 @@
 import copy
 import functools
 import os
-from typing import Any
+from typing import Any, override
 
 import dill
 from cyy_naive_lib.log import log_info
@@ -11,6 +11,7 @@ from datasets import load_dataset as load_hugging_face_dataset
 
 
 class HuggingFaceFactory(DatasetFactory):
+    @override
     def get(
         self, key: str, case_sensitive: bool = True, default: Any = None, **kwargs: Any
     ) -> functools.partial[Any] | None:
@@ -63,7 +64,7 @@ class HuggingFaceFactory(DatasetFactory):
             )
             if "data_files" in kwargs:
                 setattr(dataset, file_key, kwargs["data_files"])
-        except BaseException as e:
+        except Exception as e:
             if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
                 if file_key not in kwargs:
                     return None
@@ -86,7 +87,7 @@ class HuggingFaceFactory(DatasetFactory):
         try:
             load_dataset_builder(path=key, name=dataset_kwargs.get("name"))
             return True
-        except BaseException as e:
+        except Exception as e:
             log_info("exception is %s", e)
         return False
 
