@@ -89,9 +89,10 @@ class HuggingFaceModelFactory(Factory):
         log_info("tokenizer is %s", type(tokenizer.tokenizer))
         if model_type == ModelType.UnknownType:
             log_debug("config dict is %s", model.config.get_config_dict(real_name))
-            architectures = model.config.get_config_dict(real_name)[0]["architectures"]
+            config_dict = model.config.get_config_dict(real_name)[0]
+            architectures = config_dict.get("architectures", [])
             for arch in architectures:
-                if "ForCausalLM".lower() in arch.lower():
+                if "forcausallm" in arch.lower():
                     model_type = ModelType.CausalLM
                     break
 

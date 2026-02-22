@@ -75,16 +75,19 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
     ) -> dict[str, Any]:
         match self.model_type:
             case ModelType.CausalLM:
+                assert inputs is not None
                 for v in inputs.values():
                     if isinstance(v, torch.Tensor):
                         v.squeeze_(dim=0)
                 assert "labels" in inputs
             case ModelType.Classification:
+                assert inputs is not None
                 if "targets" in kwargs:
                     inputs["labels"] = kwargs["targets"]
             case ModelType.TokenClassification:
                 assert inputs is None
                 inputs = kwargs
+        assert inputs is not None
         return inputs
 
     def get_feature_forward_fun(self) -> str:
