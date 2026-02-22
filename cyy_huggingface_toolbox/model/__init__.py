@@ -49,7 +49,7 @@ for dataset_type in (DatasetType.Text, DatasetType.CodeText):
 class HuggingFaceModelFactory(Factory):
     @override
     def get(
-        self, key: str, case_sensitive: bool = True, default: Any = None
+        self, key: str, case_sensitive: bool = True, default: Any = None, **kwargs: Any
     ) -> dict[str, Any] | None:
         assert case_sensitive
         assert default is None

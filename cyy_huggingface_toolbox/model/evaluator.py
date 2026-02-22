@@ -95,6 +95,7 @@ class HuggingFaceModelEvaluator(ModelEvaluator):
 
     def generate(self, **kwargs: Any) -> list[str]:
         model_input = self._create_input(**kwargs)
+        model_input.pop("labels", None)
         generated_ids = self.model.generate(
             **model_input,
             **(kwargs["generate_kwargs"]),
