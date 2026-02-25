@@ -27,3 +27,19 @@ def test_hugging_face_tokenizer() -> None:
     tokenizer = trainer.model_evaluator.tokenizer_mixin
     assert isinstance(tokenizer, HuggingFaceTokenizer)
     tokenizer_testcases(tokenizer=tokenizer)
+
+
+def test_hugging_face_tokenizer_dynamic_padding() -> None:
+    config = Config(
+        dataset_name="imdb",
+        model_name="hugging_face_sequence_classification_distilbert-base-cased",
+    )
+    config.create_trainer()
+
+
+def test_hugging_face_causal_lm_tokenizer() -> None:
+    config = Config(
+        dataset_name="imdb",
+        model_name="hugging_face_causal_lm_distilgpt2",
+    )
+    config.create_trainer()

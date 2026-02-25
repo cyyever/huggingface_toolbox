@@ -195,16 +195,18 @@ def apply_tokenizer_transforms(
             )
         )
         return
-    dc.append_named_transform(
-        BatchTransform(
-            fun=functools.partial(
-                transformers.DataCollatorWithPadding(
-                    tokenizer=model_evaluator.tokenizer, **tokenizer_kwargs
-                )
-            ),
-            component="input",
+    if input_max_len is None:
+        dc.append_named_transform(
+            BatchTransform(
+                fun=functools.partial(
+                    transformers.DataCollatorWithPadding(
+                        tokenizer=model_evaluator.tokenizer,
+                        return_tensors="pt",
+                    )
+                ),
+                component="input",
+            )
         )
-    )
 
 
 def huggingface_data_extraction(model_type: ModelType, data: Any) -> dict[str, Any]:

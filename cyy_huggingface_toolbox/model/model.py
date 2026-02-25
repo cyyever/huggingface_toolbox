@@ -106,7 +106,7 @@ def get_huggingface_constructor(
         real_name: str | None = None
         if model_name.startswith(prefix):
             real_name = model_name.removeprefix(prefix)
-        elif prefix == "file":
+        elif prefix == "file" and os.path.exists(model_name):
             real_name = model_name
         if real_name is not None:
             if os.path.exists(real_name):

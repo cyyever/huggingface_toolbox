@@ -6,7 +6,7 @@ from typing import Any, override
 import dill
 from cyy_naive_lib.log import log_info
 from cyy_torch_toolbox.dataset import DatasetFactory
-from datasets import Split, load_dataset_builder
+from datasets import DownloadConfig, Split, load_dataset_builder
 from datasets import load_dataset as load_hugging_face_dataset
 
 
@@ -25,6 +25,16 @@ class HuggingFaceFactory(DatasetFactory):
 
         return functools.partial(self.__get_dataset, path=key, cache_dir=cache_dir)
 
+    @staticmethod
+    def __resolve_split(split: Any) -> Any:
+        if "train" in split:
+            return Split.TRAIN
+        if "val" in split:
+            return Split.VALIDATION
+        if "test" in split:
+            return Split.TEST
+        return split
+
     @classmethod
     def __get_dataset(
         cls,
@@ -34,12 +44,7 @@ class HuggingFaceFactory(DatasetFactory):
         name: str | None = None,
         **kwargs: Any,
     ) -> Any:
-        if "train" in split:
-            split = Split.TRAIN
-        elif "val" in split:
-            split = Split.VALIDATION
-        elif "test" in split:
-            split = Split.TEST
+        split = cls.__resolve_split(split)
         kwargs["split"] = split
         kwargs["name"] = name
         kwargs["cache_dir"] = cache_dir
@@ -57,6 +62,24 @@ class HuggingFaceFactory(DatasetFactory):
             kwargs["split"] = Split.TRAIN
             kwargs["data_files"] = data_files
             kwargs["cache_dir"] = None
+        cached = (
+            "data_files" not in kwargs
+            and os.path.isfile(cls.__dataset_cache_file(cache_dir, split))
+        )
+        if cached:
+            try:
+                dataset = load_hugging_face_dataset(
+                    path=path,
+                    download_config=DownloadConfig(local_files_only=True),
+                    **kwargs,
+                )
+                return dataset
+            except Exception:
+                log_info(
+                    "Offline loading failed for %s split %s, falling back to online",
+                    path,
+                    split,
+                )
         try:
             dataset = load_hugging_face_dataset(
                 path=path,
@@ -65,9 +88,8 @@ class HuggingFaceFactory(DatasetFactory):
             if "data_files" in kwargs:
                 setattr(dataset, file_key, kwargs["data_files"])
         except Exception as e:
-            if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs):
-                if file_key not in kwargs:
-                    return None
+            if cls.__has_dataset(key=path, cache_dir=cache_dir, dataset_kwargs=kwargs) and file_key not in kwargs:
+                return None
             log_info("exception is %s", e)
             raise e
         if not os.path.isfile(cls.__dataset_cache_file(cache_dir, split)):
