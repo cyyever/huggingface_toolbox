@@ -4,7 +4,8 @@ from typing import Any, override
 
 import torch.nn
 from cyy_naive_lib.log import log_debug, log_info
-from cyy_torch_toolbox import ModelType, TensorDict, tensor_to
+from cyy_torch_toolbox import ModelType, TensorDict
+from cyy_preprocessing_pipeline import tensor_to
 from peft import get_peft_model
 from peft.peft_model import PeftModel
 from peft.tuners.lora.config import LoraConfig
