@@ -4,11 +4,12 @@ from .model import (
     HuggingFaceModelEvaluator,
     HuggingFaceModelEvaluatorForFinetune,
 )
-from .tokenizer import HuggingFaceTokenizer
+from .tokenizer import HuggingFaceTokenizer, HuggingFaceTokenizerBase
 
 __all__ = [
     "HuggingFaceModelEvaluator",
     "HuggingFaceModelEvaluatorForFinetune",
     "HuggingFaceTokenizer",
+    "HuggingFaceTokenizerBase",
     "global_data_transform_factory",
 ]

@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Any, override
 
 import torch
@@ -5,7 +6,21 @@ import transformers
 from cyy_torch_toolbox import TokenIDsType, TokenIDType, TokenizerMixin
 
 
-class HuggingFaceTokenizer(TokenizerMixin):
+class HuggingFaceTokenizerBase(TokenizerMixin):
+    @property
+    @abstractmethod
+    def tokenizer(self) -> transformers.PreTrainedTokenizerFast: ...
+
+    @override
+    def get_token_id(self, token: str) -> int | list[int]:
+        return self.tokenizer.convert_tokens_to_ids(token)
+
+    @override
+    def get_token(self, token_id: TokenIDType) -> str:
+        return self.tokenizer.convert_ids_to_tokens(token_id)
+
+
+class HuggingFaceTokenizer(HuggingFaceTokenizerBase):
     def __init__(self, tokenizer_config: dict[str, Any]) -> None:
         self.tokenizer_config: dict[str, Any] = tokenizer_config.copy()
         self.__tokenizer: transformers.PreTrainedTokenizerFast | None = None
@@ -18,6 +33,7 @@ class HuggingFaceTokenizer(TokenizerMixin):
         return state
 
     @property
+    @override
     def tokenizer(self) -> transformers.PreTrainedTokenizerFast:
         if self.__tokenizer is None:
             self.__tokenizer: transformers.PreTrainedTokenizerFast = (
@@ -56,11 +72,3 @@ class HuggingFaceTokenizer(TokenizerMixin):
             transformed_result
         )
         return batch_encoding.tokens()
-
-    @override
-    def get_token_id(self, token: str) -> int | list[int]:
-        return self.tokenizer.convert_tokens_to_ids(token)
-
-    @override
-    def get_token(self, token_id: TokenIDType) -> str:
-        return self.tokenizer.decode(token_id)
