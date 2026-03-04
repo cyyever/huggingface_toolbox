@@ -60,7 +60,7 @@ class HuggingFaceFactory(DatasetFactory):
                 if "_files" in k:
                     kwargs.pop(k)
             kwargs["split"] = Split.TRAIN
-            kwargs["data_files"] = data_files
+            kwargs["data_files"] = [str(f) for f in data_files]
             kwargs["cache_dir"] = None
         cached = (
             "data_files" not in kwargs
